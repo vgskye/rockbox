@@ -16,6 +16,7 @@
 #include "btc/btc_util.h"
 #include "osi/allocator.h"
 #include "bta/bta_dm_co.h"
+#include "osi/strncpy.h"
 
 #if (BTC_GAP_BT_INCLUDED == TRUE)
 

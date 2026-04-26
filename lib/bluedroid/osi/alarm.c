@@ -1,3 +1,4 @@
+#if 0 // TODO(skyevg): reimplement
 /******************************************************************************
  *
  *  Copyright (C) 2014 Google, Inc.
@@ -329,3 +330,4 @@ bool osi_alarm_is_active(osi_alarm_t *alarm)
 
     return false;
 }
+#endif

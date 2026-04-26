@@ -6,6 +6,7 @@
 
 #pragma once
 #include "esp_bt_defs.h"
+#include "common/bluedroid_user_config.h"
 
 #ifdef __cplusplus
 extern "C" {

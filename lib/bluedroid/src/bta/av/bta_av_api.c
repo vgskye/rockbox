@@ -28,6 +28,7 @@
 #if defined(BTA_AV_INCLUDED) && (BTA_AV_INCLUDED == TRUE)
 
 #include "osi/allocator.h"
+#include "osi/strncpy.h"
 #include "bta/bta_api.h"
 #include "bta/bta_sys.h"
 #include "bta/bta_av_api.h"

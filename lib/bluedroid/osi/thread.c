@@ -1,3 +1,4 @@
+#if 0 // TODO(skyevg): reimplement
 /******************************************************************************
  *
  *  Copyright (C) 2014 Google, Inc.
@@ -501,3 +502,4 @@ void osi_thread_workqueue_dump(osi_thread_t *thread)
     xTaskResumeAll();
 }
 #endif // OSI_THREAD_DEBUG
+#endif

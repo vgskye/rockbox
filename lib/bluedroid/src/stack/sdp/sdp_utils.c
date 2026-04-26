@@ -26,6 +26,7 @@
 #include <string.h>
 
 #include "osi/allocator.h"
+#include "osi/inet.h"
 
 #include "common/bt_defs.h"
 

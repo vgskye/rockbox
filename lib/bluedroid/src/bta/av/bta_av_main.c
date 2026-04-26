@@ -28,6 +28,7 @@
 #include "common/bt_target.h"
 #include "common/bt_trace.h"
 #include "osi/allocator.h"
+#include "osi/strncpy.h"
 
 #if defined(BTA_AV_INCLUDED) && (BTA_AV_INCLUDED == TRUE)
 #include "bta_av_int.h"

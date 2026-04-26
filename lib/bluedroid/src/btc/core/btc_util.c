@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include "osi/inet.h"
 
 #include "btc/btc_util.h"
 #if (BTA_AV_INCLUDED == TRUE)

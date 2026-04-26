@@ -38,6 +38,7 @@
 #include "l2c_int.h"
 //#include "btcore/include/module.h"
 //#include "osi/include/osi/thread.h"
+#include "osi/strncpy.h"
 
 #if BLE_INCLUDED == TRUE
 #include "gatt_int.h"

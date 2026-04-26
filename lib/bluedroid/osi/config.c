@@ -1,3 +1,4 @@
+#if 0 // TODO(skyevg): port
 /*
  * SPDX-FileCopyrightText: 2015-2021 Espressif Systems (Shanghai) CO LTD
  *
@@ -738,3 +739,4 @@ static entry_t *entry_find(const config_t *config, const char *section, const ch
 
     return NULL;
 }
+#endif

@@ -6,6 +6,7 @@
 
 #include <string.h>
 #include "osi/allocator.h"
+#include "osi/strncpy.h"
 #include "stack/bt_types.h"
 #include "bta/bta_api.h"
 #include "btc/btc_task.h"

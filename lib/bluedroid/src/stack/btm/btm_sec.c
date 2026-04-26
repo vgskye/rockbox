@@ -36,6 +36,7 @@
 #include "osi/fixed_queue.h"
 #include "osi/alarm.h"
 #include "stack/btm_ble_api.h"
+#include "osi/strncpy.h"
 
 #if (BT_USE_TRACES == TRUE && BT_TRACE_VERBOSE == FALSE)
 /* needed for sprintf() */

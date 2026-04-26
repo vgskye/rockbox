@@ -11,19 +11,36 @@ INPUT(target/mips/system-mips.o)
 #ifdef BOOTLOADER
 # undef PLUGIN_BUFFER_SIZE
 # undef CODEC_SIZE
+# undef BT_HEAP_SIZE
 # define PLUGIN_BUFFER_SIZE 0
 # define CODEC_SIZE 0
+# define BT_HEAP_SIZE 0
 # if defined(HAVE_INIT_ATTR)
 /* This needs to be fixed for the bootloader */
 #  error "bootloader does not support INIT_ATTR"
 # endif
 #endif
 
+#ifdef HAVE_BLUETOOTH
+
+/* End of the audio buffer, where the bluetooth heap starts */
+#define ENDAUDIOADDR (X1000_DRAM_END - PLUGIN_BUFFER_SIZE - CODEC_SIZE - BT_HEAP_SIZE)
+
+/* Where the bluetooth heap ends, and the codec buffer starts */
+#define ENDBTADDR (ENDAUDIOADDR + BT_HEAP_SIZE)
+
+/* Where the codec buffer ends, and the plugin buffer starts */
+#define ENDCODECADDR  (ENDBTADDR + CODEC_SIZE)
+
+#else
+
 /* End of the audio buffer, where the codec buffer starts */
 #define ENDAUDIOADDR (X1000_DRAM_END - PLUGIN_BUFFER_SIZE - CODEC_SIZE)
 
 /* Where the codec buffer ends, and the plugin buffer starts */
 #define ENDCODECADDR  (ENDAUDIOADDR + CODEC_SIZE)
+
+#endif
 
 /* Place init code in the codec buffer */
 #define INIT_BASE   ENDAUDIOADDR
@@ -143,8 +160,14 @@ SECTIONS
     } > DRAM
 
     audiobufend = ENDAUDIOADDR;
+#ifdef HAVE_BLUETOOTH
+    btbuf = ENDAUDIOADDR;
+    codecbuf = ENDBTADDR;
+    pluginbuf = ENDCODECADDR;
+#else
     codecbuf = ENDAUDIOADDR;
     pluginbuf = ENDCODECADDR;
+#endif
 
     /DISCARD/ :
     {

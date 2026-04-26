@@ -33,6 +33,7 @@
 #include "stack/btm_api.h"
 #include "stack/btu.h"
 #include "osi/allocator.h"
+#include "osi/strncpy.h"
 
 #if (defined(AVDT_INCLUDED) && AVDT_INCLUDED == TRUE)
 

@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
+#include <strlcpy.h>
 
 #include "common/bt_defs.h"
 #include "common/bt_trace.h"
@@ -20,7 +21,6 @@
 #include "osi/mutex.h"
 
 #include "stack/bt_types.h"
-#include "nvs.h"
 
 static char CONFIG_FILE_PATH[NVS_NS_NAME_MAX_SIZE] = "bt_config.conf";
 static const period_ms_t CONFIG_SETTLE_PERIOD_MS = 3000;

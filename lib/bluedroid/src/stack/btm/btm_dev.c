@@ -35,6 +35,7 @@
 #include "btm_int.h"
 #include "stack/hcidefs.h"
 #include "stack/l2c_api.h"
+#include "osi/strncpy.h"
 
 static tBTM_SEC_DEV_REC *btm_find_oldest_dev (void);
 

@@ -9,6 +9,7 @@
 #include <stdbool.h>
 
 #include "bt_common.h"
+#include "esp_bt_main.h"
 
 struct bluedroid_config {
     bool (*get_ssp_enabled)(void);

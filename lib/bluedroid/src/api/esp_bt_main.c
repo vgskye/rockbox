@@ -15,7 +15,9 @@
 #include "osi/future.h"
 #include "osi/allocator.h"
 #include "config/stack_config.h"
+#if (BT_HCI_LOG_INCLUDED == TRUE)
 #include "hci_log/bt_hci_log.h"
+#endif // (BT_HCI_LOG_INCLUDED == TRUE)
 #include "bt_common.h"
 
 static esp_bluedroid_status_t s_bt_host_state = ESP_BLUEDROID_STATUS_UNINITIALIZED;
@@ -153,12 +155,10 @@ esp_err_t esp_bluedroid_init_with_cfg(esp_bluedroid_config_t *cfg)
     osi_mem_dbg_init();
 #endif
 
-#if HEAP_MEMORY_STATS
-    if (osi_mem_init() != 0) {
+    if (osi_mem_init() <= 0) {
         LOG_ERROR("Bluedroid Initialize Fail");
         return ESP_FAIL;
     }
-#endif
 
     ret = bluedroid_config_init(cfg);
     if (ret != BT_STATUS_SUCCESS) {
@@ -250,9 +250,7 @@ esp_err_t esp_bluedroid_deinit(void)
     bt_hci_log_deinit();
 #endif // (BT_HCI_LOG_INCLUDED == TRUE)
 
-#if HEAP_MEMORY_STATS
     osi_mem_deinit();
-#endif
 
     s_bt_host_state = ESP_BLUEDROID_STATUS_UNINITIALIZED;
     return ESP_OK;

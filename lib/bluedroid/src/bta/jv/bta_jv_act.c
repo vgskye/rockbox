@@ -22,7 +22,7 @@
  *
  ******************************************************************************/
 
-#include <pthread.h>
+// #include <pthread.h>
 #include <stdlib.h>
 
 #include "osi/allocator.h"

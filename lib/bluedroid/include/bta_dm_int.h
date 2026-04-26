@@ -25,7 +25,7 @@
 #define BTA_DM_INT_H
 
 #include "common/bt_target.h"
-#include "freertos/semphr.h"
+#include "osi/semaphore.h"
 #include "bta/bta_sys.h"
 #if (BLE_INCLUDED == TRUE && (defined BTA_GATT_INCLUDED) && (BTA_GATT_INCLUDED == TRUE))
 #include "bta/bta_gatt_api.h"
@@ -2165,7 +2165,7 @@ extern tBTA_DM_DI_CB  bta_dm_di_cb;
 extern tBTA_DM_DI_CB *bta_dm_di_cb_ptr;
 #define bta_dm_di_cb (*bta_dm_di_cb_ptr)
 #endif // #if (CLASSIC_BT_INCLUDED == TRUE)
-extern SemaphoreHandle_t deinit_semaphore;
+extern osi_sem_t deinit_semaphore;
 #endif
 
 #if BTA_DYNAMIC_MEMORY == FALSE

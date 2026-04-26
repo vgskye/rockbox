@@ -32,6 +32,7 @@
 #include <assert.h>
 #include "bta/utl.h"
 #include "osi/allocator.h"
+#include "osi/strncpy.h"
 
 /*****************************************************************************
 **  Constants

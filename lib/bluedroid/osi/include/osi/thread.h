@@ -7,12 +7,7 @@
 #ifndef __THREAD_H__
 #define __THREAD_H__
 
-#include "freertos/FreeRTOSConfig.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/queue.h"
-#include "freertos/task.h"
 #include "osi/semaphore.h"
-#include "esp_task.h"
 #include "bt_common.h"
 
 #define OSI_THREAD_MAX_TIMEOUT OSI_SEM_MAX_TIMEOUT

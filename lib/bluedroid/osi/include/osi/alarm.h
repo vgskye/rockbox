@@ -20,12 +20,12 @@
 #define _ALARM_H_
 
 #include <stdint.h>
-#include "esp_timer.h"
+#include <stdbool.h>
 #include "bt_user_config.h"
 
 typedef struct alarm_t osi_alarm_t;
 typedef uint64_t period_ms_t;
-typedef esp_timer_cb_t osi_alarm_callback_t;
+typedef void (*osi_alarm_callback_t)(void* arg);
 
 typedef enum {
     OSI_ALARM_ERR_PASS = 0,

@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef __CONFIG_H__
-#define __CONFIG_H__
+#ifndef __OSI_CONFIG_H__
+#define __OSI_CONFIG_H__
 
 // This module implements a configuration parser. Clients can query the
 // contents of a configuration file through the interface provided here.
@@ -24,6 +24,9 @@
 // - All strings are case sensitive.
 
 #include <stdbool.h>
+#include <fs_defines.h>
+
+#define NVS_NS_NAME_MAX_SIZE MAX_PATH
 
 // The default section name to use if a key/value pair is not defined within
 // a section.
@@ -142,4 +145,4 @@ const char *config_section_name(const config_section_node_t *iter);
 // |filename| may be NULL.
 bool config_save(const config_t *config, const char *filename);
 
-#endif /* #ifndef __CONFIG_H__ */
+#endif /* #ifndef __OSI_CONFIG_H__ */

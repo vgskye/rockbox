@@ -17,7 +17,7 @@ CORE_LIBS += $(LIBBLUEDROID) $(TLSFLIB)
 
 INCLUDES += -I$(BLUEDROID_DIR)/export -I$(BLUEDROID_DIR)/include \
 			-I$(BLUEDROID_DIR)/osi/include -I$(BLUEDROID_DIR)/sbc/decoder/include \
-			-I$(BLUEDROID_DIR)/sbc/encoder/include -I$(BLUEDROID_DIR)sbc/plc/include
+			-I$(BLUEDROID_DIR)/sbc/encoder/include -I$(BLUEDROID_DIR)/sbc/plc/include
 
 $(LIBBLUEDROID): $(BLUEDROID_OBJ)
 	$(SILENT)$(shell rm -f $@)

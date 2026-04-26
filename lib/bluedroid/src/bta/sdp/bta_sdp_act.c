@@ -22,7 +22,7 @@
 
 // #include <hardware/bluetooth.h>
 #include "bt_sdp.h"
-// #include <arpa/inet.h>
+#include "osi/inet.h"
 #include "common/bt_defs.h"
 #include <stdlib.h>
 #include <string.h>

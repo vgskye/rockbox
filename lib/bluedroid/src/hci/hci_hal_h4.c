@@ -40,7 +40,9 @@
 #include "l2c_int.h"
 #endif ///C2H_FLOW_CONTROL_INCLUDED == TRUE
 #include "stack/hcimsgs.h"
+#if (BT_HCI_LOG_INCLUDED == TRUE)
 #include "hci_log/bt_hci_log.h"
+#endif // (BT_HCI_LOG_INCLUDED == TRUE)
 
 #if CONFIG_BT_BLE_LOG_SPI_OUT_HCI_ENABLED
 #include "ble_log/ble_log_spi_out.h"
@@ -670,11 +672,7 @@ static int host_recv_pkt_cb(uint8_t *data, uint16_t len)
         }
 #endif
         pkt_size = BT_PKT_LINKED_HDR_SIZE + BT_HDR_SIZE + len;
-        #if (HEAP_MEMORY_DEBUG || HEAP_MEMORY_STATS)
         linked_pkt = (pkt_linked_item_t *) osi_calloc(pkt_size);
-        #else
-        linked_pkt = (pkt_linked_item_t *) osi_calloc_base(pkt_size);
-        #endif
         if (!linked_pkt) {
 #if (BLE_ADV_REPORT_FLOW_CONTROL == TRUE)
             hci_adv_credits_consumed(1);

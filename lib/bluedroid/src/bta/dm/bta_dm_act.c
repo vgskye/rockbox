@@ -38,6 +38,7 @@
 #include "bta/utl.h"
 #include "stack/gap_api.h"    /* For GAP_BleReadPeerPrefConnParams */
 #include <string.h>
+#include "osi/strncpy.h"
 #include "device/controller.h"
 
 #define LOG_TAG "bt_bta_dm"

@@ -25,8 +25,6 @@
 
 // #include "btif_util.h"
 #include "btm_int.h"
-#include "nvs.h"
-#include "nvs_flash.h"
 #include "osi/list.h"
 #include "esp_err.h"
 #include "osi/allocator.h"
@@ -34,6 +32,9 @@
 #if( defined BLE_INCLUDED ) && (BLE_INCLUDED == TRUE)
 #if( defined BTA_GATT_INCLUDED ) && (GATTC_INCLUDED == TRUE)
 // #if( defined GATTC_CACHE_NVS ) && (GATTC_CACHE_NVS == TRUE)
+
+#include "nvs.h"
+#include "nvs_flash.h"
 
 #define GATT_CACHE_PREFIX "gatt_"
 #define INVALID_ADDR_NUM 0xff
