@@ -98,7 +98,7 @@
 #define BTC_TASK_PINNED_TO_CORE         (TASK_PINNED_TO_CORE)
 #define BTC_TASK_STACK_SIZE             (BT_BTC_TASK_STACK_SIZE + BT_TASK_EXTRA_STACK_SIZE)	//by menuconfig
 #define BTC_TASK_NAME                   "BTC_TASK"
-#define BTC_TASK_PRIO                   PRIORITY_REALTIME
+#define BTC_TASK_PRIO                   PRIORITY_REALTIME // TODO(skyevg): think about priority more
 #define BTC_TASK_WORKQUEUE_NUM          (2)
 #define BTC_TASK_WORKQUEUE0_LEN         (0)
 #define BTC_TASK_WORKQUEUE1_LEN         (5)
