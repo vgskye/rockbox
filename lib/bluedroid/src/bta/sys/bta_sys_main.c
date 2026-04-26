@@ -23,7 +23,7 @@
  ******************************************************************************/
 #define LOG_TAG "bt_bta_sys_main"
 
-#include <assert.h>
+#include <osi/assert.h>
 #include <string.h>
 
 #include "osi/alarm.h"

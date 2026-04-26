@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdlib.h>
-#include <assert.h>
+#include <osi/assert.h>
 #include "time.h"
 #include "btc/btc_dm.h"
 #include "btc_hf_ag.h"

@@ -22,7 +22,7 @@
 #include "btc_a2dp_source.h"
 #include "btc_av.h"
 #include "esp_a2dp_api.h"
-#include <assert.h>
+#include <osi/assert.h>
 
 #if (BTC_AV_SRC_INCLUDED == TRUE) && (BTC_AV_EXT_CODEC == TRUE)
 

@@ -7,7 +7,7 @@
 #ifndef _BT_COMMON_H_
 #define _BT_COMMON_H_
 
-#include <assert.h>
+#include <osi/assert.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include "bt_user_config.h"

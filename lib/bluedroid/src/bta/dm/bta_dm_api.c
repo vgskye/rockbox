@@ -29,7 +29,7 @@
 #include "stack/btm_api.h"
 #include "btm_int.h"
 #include <string.h>
-#include <assert.h>
+#include <osi/assert.h>
 #include "bta/utl.h"
 #include "osi/allocator.h"
 #include "osi/strncpy.h"

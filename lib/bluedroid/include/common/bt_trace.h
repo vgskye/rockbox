@@ -19,7 +19,7 @@
 #ifndef _BT_TRACE_H_
 #define _BT_TRACE_H_
 
-#include <assert.h>
+#include <osi/assert.h>
 #include <stdio.h>
 #include "bluedroid_user_config.h"
 #include "stack/bt_types.h"

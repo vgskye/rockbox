@@ -35,7 +35,7 @@
 #include "btc/btc_util.h"
 #include "esp_a2dp_api.h"
 #include "osi/future.h"
-#include <assert.h>
+#include <osi/assert.h>
 
 #if (BTC_AV_SRC_INCLUDED == TRUE) && (BTC_AV_EXT_CODEC == FALSE)
 

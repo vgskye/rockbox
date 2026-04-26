@@ -18,7 +18,7 @@
  */
 
 #include <string.h>
-#include <assert.h>
+#include <osi/assert.h>
 #include "hci/ble_hci_iso.h"
 #include "common/bt_target.h"
 #include "osi/mutex.h"

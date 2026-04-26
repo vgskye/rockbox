@@ -28,7 +28,7 @@
 #if (BT_CONTROLLER_INCLUDED == TRUE)
 #include "esp_bt.h"
 #endif
-#include <assert.h>
+#include <osi/assert.h>
 
 #if BT_HF_CLIENT_BQB_INCLUDED
 static BOOLEAN s_bta_hf_client_bqb_esco_s4_flag = false;

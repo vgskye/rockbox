@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdlib.h>
-#include <assert.h>
+#include <osi/assert.h>
 #include "bt_common.h"
 #include "btc/btc_common.h"
 #include "btc/btc_dm.h"

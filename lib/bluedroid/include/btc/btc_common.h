@@ -8,7 +8,7 @@
 #ifndef __BTC_COMMON_H__
 #define __BTC_COMMON_H__
 
-#include <assert.h>
+#include <osi/assert.h>
 #include "common/bt_trace.h"
 #include "stack/bt_types.h"
 #include "osi/osi.h"

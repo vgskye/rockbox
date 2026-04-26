@@ -27,7 +27,7 @@
 #include "common/bt_target.h"
 #if defined(BTA_AV_INCLUDED) && (BTA_AV_INCLUDED == TRUE)
 
-#include <assert.h>
+#include <osi/assert.h>
 #include "common/bt_trace.h"
 #include <string.h>
 

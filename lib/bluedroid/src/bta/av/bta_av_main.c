@@ -22,7 +22,7 @@
  *
  ******************************************************************************/
 
-#include <assert.h>
+#include <osi/assert.h>
 #include <string.h>
 
 #include "common/bt_target.h"

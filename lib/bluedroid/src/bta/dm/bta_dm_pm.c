@@ -23,7 +23,7 @@
  *
  ******************************************************************************/
 
-#include <assert.h>
+#include <osi/assert.h>
 #include <string.h>
 
 #include "bta/bta_sys.h"
