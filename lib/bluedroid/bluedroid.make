@@ -19,6 +19,13 @@ INCLUDES += -I$(BLUEDROID_DIR)/export -I$(BLUEDROID_DIR)/include \
 			-I$(BLUEDROID_DIR)/osi/include -I$(BLUEDROID_DIR)/sbc/decoder/include \
 			-I$(BLUEDROID_DIR)/sbc/encoder/include -I$(BLUEDROID_DIR)/sbc/plc/include
 
+BLUEDROID_FLAGS := $(CFLAGS) -Wno-undef -Wno-unused-parameter
+
+$(BUILDDIR)/lib/bluedroid/%.o: $(BLUEDROID_DIR)/%.c
+	$(SILENT)mkdir -p $(dir $@)
+	$(call PRINTS,CC $(subst $(ROOTDIR)/,,$<))$(CC) \
+		$(BLUEDROID_FLAGS) -c $< -o $@
+
 $(LIBBLUEDROID): $(BLUEDROID_OBJ)
 	$(SILENT)$(shell rm -f $@)
 	$(call PRINTS,AR $(@F))$(AR) rcs $@ $^ >/dev/null
