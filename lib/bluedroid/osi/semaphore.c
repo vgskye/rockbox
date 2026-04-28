@@ -29,3 +29,9 @@ void osi_sem_give(osi_sem_t *sem)
 {
     semaphore_release(sem);
 }
+
+
+void osi_sem_free(osi_sem_t *sem)
+{
+    (void)sem;
+}
