@@ -7,6 +7,7 @@
 
 #include "osi/osi.h"
 #include "osi/mutex.h"
+#include "osi/thread.h"
 
 int osi_init(void)
 {
@@ -15,6 +16,8 @@ int osi_init(void)
     if (osi_mutex_global_init() != 0) {
         ret = -1;
     }
+
+    osi_thread_init();
 
     return ret;
 }
