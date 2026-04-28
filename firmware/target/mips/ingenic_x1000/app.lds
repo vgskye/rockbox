@@ -43,7 +43,11 @@ INPUT(target/mips/system-mips.o)
 #endif
 
 /* Place init code in the codec buffer */
+#ifdef HAVE_BLUETOOTH
+#define INIT_BASE   ENDBTADDR
+#else
 #define INIT_BASE   ENDAUDIOADDR
+#endif
 #define INIT_SIZE   CODEC_SIZE
 
 MEMORY
