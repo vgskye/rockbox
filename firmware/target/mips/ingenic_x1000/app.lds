@@ -26,11 +26,11 @@ INPUT(target/mips/system-mips.o)
 /* End of the audio buffer, where the bluetooth heap starts */
 #define ENDAUDIOADDR (X1000_DRAM_END - PLUGIN_BUFFER_SIZE - CODEC_SIZE - BT_HEAP_SIZE)
 
-/* Where the codec buffer ends, and the plugin buffer starts */
-#define ENDCODECADDR  (ENDAUDIOADDR + CODEC_SIZE)
+/* Where the bluetooth heap ends, and the codec buffer starts */
+#define ENDBTADDR (ENDAUDIOADDR + BT_HEAP_SIZE)
 
 /* Where the codec buffer ends, and the plugin buffer starts */
-#define ENDBTADDR  (ENDCODECADDR + BT_HEAP_SIZE)
+#define ENDCODECADDR  (ENDBTADDR + CODEC_SIZE)
 
 #else
 
@@ -161,9 +161,9 @@ SECTIONS
 
     audiobufend = ENDAUDIOADDR;
 #ifdef HAVE_BLUETOOTH
-    codecbuf = ENDAUDIOADDR;
-    btbuf = ENDCODECADDR;
-    pluginbuf = ENDBTADDR;
+    btbuf = ENDAUDIOADDR;
+    codecbuf = ENDBTADDR;
+    pluginbuf = ENDCODECADDR;
 #else
     codecbuf = ENDAUDIOADDR;
     pluginbuf = ENDCODECADDR;
