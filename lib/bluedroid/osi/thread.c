@@ -94,11 +94,7 @@ static bool osi_thead_work_queue_get(struct work_queue *wq, struct queue_event *
     assert (item != NULL);
 
     queue_wait_w_tmo(&wq->queue, item, 0);
-    if (item->id == SYS_TIMEOUT) {
-        return true;
-    } else {
-        return false;
-    }
+    return item->id != SYS_TIMEOUT;
 }
 
 static size_t osi_thead_work_queue_len(struct work_queue *wq)
@@ -108,9 +104,9 @@ static size_t osi_thead_work_queue_len(struct work_queue *wq)
     return queue_count(&wq->queue);
 }
 
-static struct osi_thread_start_arg *hack_thread_start_arg;
-static osi_mutex_t hack_thread_start_arg_mutex;
-static bool hack_thread_start_arg_mutex_initialized = FALSE;
+struct osi_thread_start_arg *hack_thread_start_arg;
+osi_mutex_t hack_thread_start_arg_mutex;
+bool hack_thread_start_arg_mutex_initialized = FALSE;
 
 static void osi_thread_run(void)
 {
@@ -191,13 +187,13 @@ osi_thread_t *osi_thread_create(const char *name, size_t stack_size, int priorit
         return NULL;
     }
 
-    void *stack = osi_calloc(stack_size);
-    if (stack == NULL) {
+    osi_thread_t *thread = (osi_thread_t *)osi_calloc(sizeof(osi_thread_t));
+    if (thread == NULL) {
         goto _err;
     }
 
-    osi_thread_t *thread = (osi_thread_t *)osi_calloc(sizeof(osi_thread_t));
-    if (thread == NULL) {
+    void *stack = osi_calloc(stack_size);
+    if (stack == NULL) {
         goto _err;
     }
 
@@ -258,6 +254,10 @@ _err:
         if (thread->work_queues) {
             osi_free(thread->work_queues);
             thread->work_queues = NULL;
+        }
+
+        if (stack) {
+            osi_free(stack);
         }
 
         osi_free(thread);
