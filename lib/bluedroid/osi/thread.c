@@ -110,10 +110,7 @@ static size_t osi_thead_work_queue_len(struct work_queue *wq)
 
 static struct osi_thread_start_arg *hack_thread_start_arg;
 static osi_mutex_t hack_thread_start_arg_mutex;
-
-void osi_thread_init(void) {
-    osi_mutex_new(&hack_thread_start_arg_mutex);
-}
+static bool hack_thread_start_arg_mutex_initialized = FALSE;
 
 static void osi_thread_run(void)
 {
@@ -182,6 +179,11 @@ osi_thread_t *osi_thread_create(const char *name, size_t stack_size, int priorit
 {
     int ret;
     struct osi_thread_start_arg start_arg = {0};
+
+    if (!hack_thread_start_arg_mutex_initialized) {
+        osi_mutex_new(&hack_thread_start_arg_mutex);
+        hack_thread_start_arg_mutex_initialized = TRUE;
+    }
 
     if (stack_size <= 0 ||
             core < OSI_THREAD_CORE_0 || core > OSI_THREAD_CORE_AFFINITY ||

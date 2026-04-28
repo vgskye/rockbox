@@ -25,8 +25,6 @@ typedef enum {
     OSI_THREAD_CORE_AFFINITY,
 } osi_thread_core_t;
 
-void osi_thread_init(void);
-
 /*
  * brief: Create a thread or task
  * param name: thread name
