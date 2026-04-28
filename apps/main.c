@@ -81,6 +81,9 @@
 #if defined(HAVE_DEVICEDATA)
 #include "devicedata.h"
 #endif
+#if defined(HAVE_BLUETOOTH)
+#include "bluetooth.h"
+#endif
 
 #if (CONFIG_PLATFORM & PLATFORM_ANDROID)
 #include "notification.h"
@@ -781,6 +784,10 @@ static void init(void)
 
 #ifdef HAVE_WIFI
     wifi_init();
+#endif
+
+#ifdef HAVE_BLUETOOTH
+    bluetooth_init();
 #endif
 
     /* runtime database has to be initialized after audio_init() */
