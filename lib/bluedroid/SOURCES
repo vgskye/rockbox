@@ -13,6 +13,8 @@ osi/mutex.c
 osi/thread.c
 osi/osi.c
 osi/semaphore.c
+osi/misc.c
+../../../firmware/libc/sscanf.c
 
 sbc/decoder/srce/alloc.c
 sbc/decoder/srce/bitalloc-sbc.c
