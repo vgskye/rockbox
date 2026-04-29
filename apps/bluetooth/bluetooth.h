@@ -1,3 +1,3 @@
-#include "config.h"
-
-void INIT_ATTR bluetooth_init(void);
+#include "stdbool.h"
+void bluetooth_init(void);
+bool bluetooth_enable_discover(void);
