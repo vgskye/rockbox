@@ -1,14 +1,12 @@
 
 #include "action.h"
 #include "asm/thread.h"
-#include "esp_a2dp_legacy_api.h"
 #include "esp_bluedroid_hci.h"
 #include "esp_bt_main.h"
 #include "esp_gap_bt_api.h"
 #include "gpio-x1000.h"
 #include "panic.h"
 #include "semaphore.h"
-#include "splash.h"
 #include "thread.h"
 #include "bcm43430a1_firmware.h"
 #include "tick.h"
@@ -177,6 +175,5 @@ bool bluetooth_enable_discover(void)
     if ((ret = esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE)) != ESP_OK) {
         panicf("%s set scan mode failed: %d", __func__, ret);
     }
-    esp_a2d_source_register_data_callback(NULL);
     return true;
 }
