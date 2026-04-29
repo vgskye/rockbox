@@ -29,6 +29,7 @@ extern unsigned char btbuf[];
 
 int osi_mem_init(void)
 {
+    memset(btbuf, 0, 4); // make sure tlsf doesn't see ghosts
     return init_memory_pool(BT_HEAP_SIZE, btbuf);
 }
 
