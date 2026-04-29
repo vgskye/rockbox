@@ -1,4 +1,3 @@
-// TODO(skyevg): copy an implementation from somewhere
 #include <stdint.h>
 
 uint32_t htonl(uint32_t hostlong);
