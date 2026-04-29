@@ -157,6 +157,22 @@ DEFINE_GPIO(BT_WAKE_HOST,       GPIO_PC(20),    GPIOF_INPUT)
 // gpio 83 --> port C, pin 19
 DEFINE_GPIO(HOST_WAKE_BT,       GPIO_PC(19),    GPIOF_OUTPUT(0))
 
+/* bt_reg_on */
+// gpio 82 --> port C, pin 18
+DEFINE_GPIO(BT_REG_ON_HW4,       GPIO_PC(18),    GPIOF_OUTPUT(0))
+
+/* uart0_rxd */
+DEFINE_GPIO(BT_RXD_HW4,       GPIO_PC(10),    GPIOF_DEVICE(0b00))
+
+/* uart0_txd */
+DEFINE_GPIO(BT_TXD_HW4,       GPIO_PC(11),    GPIOF_DEVICE(0b00))
+
+/* uart0_cts */
+DEFINE_GPIO(BT_CTS_HW4,       GPIO_PC(12),    GPIOF_DEVICE(0b00))
+
+/* uart0_rts */
+DEFINE_GPIO(BT_RTS_HW4,       GPIO_PC(13),    GPIOF_DEVICE(0b00))
+
 /**************/
 /* USB        */
 /**************/
