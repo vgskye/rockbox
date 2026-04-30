@@ -3929,7 +3929,7 @@ fi
     target="EROS_QN"
     memory=32
     mipsr2elcc
-    appextra="recorder:gui"
+    appextra="recorder:gui:bluetooth"
     plugins="yes"
     tool="$rootdir/tools/scramble -add=erosqnative "
     boottool="$rootdir/tools/mkspl-x1000 -type=nand -ppb=2 -bpp=2 "
