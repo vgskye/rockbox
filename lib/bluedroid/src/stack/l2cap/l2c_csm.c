@@ -166,6 +166,7 @@ static void l2c_csm_closed (tL2C_CCB *p_ccb, UINT16 event, void *p_data)
         break;
 
     case L2CEVT_LP_CONNECT_CFM_NEG:                     /* Link failed          */
+    {
         tL2C_CONN_INFO *p_ci = (tL2C_CONN_INFO *)p_data;
         /* Disconnect unless ACL collision and upper layer wants to handle it */
         if (p_ci->status != HCI_ERR_CONNECTION_EXISTS
@@ -175,7 +176,7 @@ static void l2c_csm_closed (tL2C_CCB *p_ccb, UINT16 event, void *p_data)
             (*connect_cfm)(local_cid, p_ci->status);
         }
         break;
-
+    }
     case L2CEVT_L2CA_CONNECT_REQ:                       /* API connect request  */
         /* Cancel sniff mode if needed */
     {
