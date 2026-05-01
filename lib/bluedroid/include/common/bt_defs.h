@@ -13,7 +13,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <arpa/inet.h>
+#include "osi/inet.h"
 #include "bt_common.h"
 #include "common/bt_target.h"
 
