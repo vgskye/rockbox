@@ -49,7 +49,6 @@
 #undef strrchr
 #undef strtok_r
 #ifdef __APPLE__
-#undef strncpy
 #undef snprintf
 #undef strcpy
 #undef strcat
@@ -62,7 +61,6 @@
 
 #define splash(__ticks, __str) splashf(__ticks, __str)
 
-char* strncpy(char *, const char *, size_t);
 void* plugin_get_buffer(size_t *buffer_size);
 size_t plugin_reserve_buffer(size_t buffer_size);
 int plugin_open(const char *plugin, const char *parameter);
