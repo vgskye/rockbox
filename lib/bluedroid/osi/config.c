@@ -381,7 +381,7 @@ bool config_save(const config_t *config, const char *filename)
     } else {
         snprintf(actual_path, MAX_PATH, ROCKBOX_DIR "%s", filename);
     }
-    int fp = open(actual_path, O_WRONLY | O_TRUNC | O_CREAT);
+    int fp = open(actual_path, O_WRONLY | O_TRUNC | O_CREAT, 0666);
     if (fp < 0) {
         err_code |= 0x02;
         goto error;

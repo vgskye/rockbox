@@ -54,6 +54,9 @@ struct pcm_sink {
 
 enum pcm_sink_ids {
     PCM_SINK_BUILTIN = 0,
+#ifdef HAVE_BLUETOOTH
+    PCM_SINK_BLUETOOTH,
+#endif
 #ifdef USB_ENABLE_IAP
     PCM_SINK_IAP,
 #endif
@@ -62,3 +65,7 @@ enum pcm_sink_ids {
 
 /* defined in each platform pcm source */
 extern struct pcm_sink builtin_pcm_sink;
+
+#ifdef HAVE_BLUETOOTH
+extern struct pcm_sink bt_pcm_sink;
+#endif
