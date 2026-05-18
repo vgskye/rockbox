@@ -22,6 +22,7 @@
  *  BTC.
  *
  ******************************************************************************/
+#include "stack/a2d_codecs.h"
 #include "string.h"
 #include "common/bt_target.h"
 #include "stack/a2d_api.h"
@@ -489,35 +490,22 @@ UINT8 bta_av_audio_sink_getconfig(tBTA_AV_HNDL hndl, tBTA_AV_CODEC codec_type,
 
     p_peer->num_rx_srcs++;
 
-    /* Check if this is a supported configuration */
-    supported = FALSE;
-    switch (codec_type) {
-    case BTA_AV_CODEC_SBC:
-        supported = TRUE;
-        break;
+    /* If there is room for a new one */
+    if (p_peer->num_sup_srcs < BTA_AV_CO_NUM_ELEMENTS(p_peer->srcs)) {
+        p_src = &p_peer->srcs[p_peer->num_sup_srcs++];
 
-    default:
-        break;
-    }
+        APPL_TRACE_DEBUG("bta_av_audio_sink_getconfig saved caps[%x:%x:%x:%x:%x:%x]",
+                            p_codec_info[1], p_codec_info[2], p_codec_info[3],
+                            p_codec_info[4], p_codec_info[5], p_codec_info[6]);
 
-    if (supported) {
-        /* If there is room for a new one */
-        if (p_peer->num_sup_srcs < BTA_AV_CO_NUM_ELEMENTS(p_peer->srcs)) {
-            p_src = &p_peer->srcs[p_peer->num_sup_srcs++];
-
-            APPL_TRACE_DEBUG("bta_av_audio_sink_getconfig saved caps[%x:%x:%x:%x:%x:%x]",
-                             p_codec_info[1], p_codec_info[2], p_codec_info[3],
-                             p_codec_info[4], p_codec_info[5], p_codec_info[6]);
-
-            memcpy(p_src->codec_caps, p_codec_info, AVDT_CODEC_SIZE);
-            p_src->codec_type = codec_type;
-            p_src->sep_info_idx = *p_sep_info_idx;
-            p_src->seid = seid;
-            p_src->num_protect = *p_num_protect;
-            memcpy(p_src->protect_info, p_protect_info, BTA_AV_CP_INFO_LEN);
-        } else {
-            APPL_TRACE_ERROR("bta_av_audio_sink_getconfig no more room for SRC info");
-        }
+        memcpy(p_src->codec_caps, p_codec_info, AVDT_CODEC_SIZE);
+        p_src->codec_type = codec_type;
+        p_src->sep_info_idx = *p_sep_info_idx;
+        p_src->seid = seid;
+        p_src->num_protect = *p_num_protect;
+        memcpy(p_src->protect_info, p_protect_info, BTA_AV_CP_INFO_LEN);
+    } else {
+        APPL_TRACE_ERROR("bta_av_audio_sink_getconfig no more room for SRC info");
     }
 
     /* If last SNK get capabilities or all supported codec caps retrieved */
@@ -610,35 +598,22 @@ UINT8 bta_av_co_audio_getconfig(tBTA_AV_HNDL hndl, tBTA_AV_CODEC codec_type,
 
     p_peer->num_rx_snks++;
 
-    /* Check if this is a supported configuration */
-    supported = FALSE;
-    switch (codec_type) {
-    case BTA_AV_CODEC_SBC:
-        supported = TRUE;
-        break;
+    /* If there is room for a new one */
+    if (p_peer->num_sup_snks < BTA_AV_CO_NUM_ELEMENTS(p_peer->snks)) {
+        p_sink = &p_peer->snks[p_peer->num_sup_snks++];
 
-    default:
-        break;
-    }
+        APPL_TRACE_DEBUG("bta_av_co_audio_getconfig saved caps[%x:%x:%x:%x:%x:%x]",
+                            p_codec_info[1], p_codec_info[2], p_codec_info[3],
+                            p_codec_info[4], p_codec_info[5], p_codec_info[6]);
 
-    if (supported) {
-        /* If there is room for a new one */
-        if (p_peer->num_sup_snks < BTA_AV_CO_NUM_ELEMENTS(p_peer->snks)) {
-            p_sink = &p_peer->snks[p_peer->num_sup_snks++];
-
-            APPL_TRACE_DEBUG("bta_av_co_audio_getconfig saved caps[%x:%x:%x:%x:%x:%x]",
-                             p_codec_info[1], p_codec_info[2], p_codec_info[3],
-                             p_codec_info[4], p_codec_info[5], p_codec_info[6]);
-
-            memcpy(p_sink->codec_caps, p_codec_info, AVDT_CODEC_SIZE);
-            p_sink->codec_type = codec_type;
-            p_sink->sep_info_idx = *p_sep_info_idx;
-            p_sink->seid = seid;
-            p_sink->num_protect = *p_num_protect;
-            memcpy(p_sink->protect_info, p_protect_info, BTA_AV_CP_INFO_LEN);
-        } else {
-            APPL_TRACE_ERROR("bta_av_co_audio_getconfig no more room for SNK info");
-        }
+        memcpy(p_sink->codec_caps, p_codec_info, AVDT_CODEC_SIZE);
+        p_sink->codec_type = codec_type;
+        p_sink->sep_info_idx = *p_sep_info_idx;
+        p_sink->seid = seid;
+        p_sink->num_protect = *p_num_protect;
+        memcpy(p_sink->protect_info, p_protect_info, BTA_AV_CP_INFO_LEN);
+    } else {
+        APPL_TRACE_ERROR("bta_av_co_audio_getconfig no more room for SNK info");
     }
 
     /* If last SNK get capabilities or all supported codec capa retrieved */
@@ -771,6 +746,9 @@ void bta_av_co_audio_setconfig(tBTA_AV_HNDL hndl, tBTA_AV_CODEC codec_type,
     }
 #endif
     if (status == A2D_SUCCESS) {
+#if (BTC_AV_EXT_CODEC == TRUE)
+        codec_cfg_status = A2D_SUCCESS;
+#else
         if (AVDT_TSEP_SNK == t_local_sep) {
             codec_cfg_status = bta_av_co_audio_sink_supports_config(codec_type, p_codec_info);
             APPL_TRACE_DEBUG(" Peer is  A2DP SRC ");
@@ -779,43 +757,34 @@ void bta_av_co_audio_setconfig(tBTA_AV_HNDL hndl, tBTA_AV_CODEC codec_type,
             codec_cfg_status = bta_av_co_audio_media_supports_config(codec_type, p_codec_info);
             APPL_TRACE_DEBUG(" Peer is A2DP SINK ");
         }
+#endif
         /* Check if codec configuration is supported */
         if (codec_cfg_status == A2D_SUCCESS) {
 
             /* Protect access to bta_av_co_cb.codec_cfg */
             osi_mutex_global_lock();
 
-            /* Check if the configuration matches the current codec config */
-            switch (bta_av_co_cb.codec_cfg.id) {
-            case BTC_AV_CODEC_SBC:
-                if ((codec_type != BTA_AV_CODEC_SBC) || memcmp(p_codec_info, bta_av_co_cb.codec_cfg.info, 5)) {
-                    recfg_needed = TRUE;
-                } else if ((num_protect == 1) && (!bta_av_co_cb.cp.active)) {
-                    recfg_needed = TRUE;
-                }
-
-                /* if remote side requests a restricted notify sinks preferred bitpool range as all other params are
-                   already checked for validify */
-                APPL_TRACE_EVENT("remote peer setconfig bitpool range [%d:%d]",
-                                 p_codec_info[BTA_AV_CO_SBC_MIN_BITPOOL_OFF],
-                                 p_codec_info[BTA_AV_CO_SBC_MAX_BITPOOL_OFF] );
-
-                bta_av_co_cb.codec_cfg_setconfig.id = BTC_AV_CODEC_SBC;
-                memcpy(bta_av_co_cb.codec_cfg_setconfig.info, p_codec_info, AVDT_CODEC_SIZE);
-                if (AVDT_TSEP_SNK == t_local_sep) {
-                    /* If Peer is SRC, and our cfg subset matches with what is requested by peer, then
-                                         just accept what peer wants */
-                    memcpy(bta_av_co_cb.codec_cfg.info, p_codec_info, AVDT_CODEC_SIZE);
-                    recfg_needed = FALSE;
-                }
-                break;
-
-
-            default:
-                APPL_TRACE_ERROR("bta_av_co_audio_setconfig unsupported cid %d", bta_av_co_cb.codec_cfg.id);
+            if ((p_codec_info[0] != bta_av_co_cb.codec_cfg.info[0]) || memcmp(p_codec_info, bta_av_co_cb.codec_cfg.info, bta_av_co_cb.codec_cfg.info[0])) {
                 recfg_needed = TRUE;
-                break;
+            } else if ((num_protect == 1) && (!bta_av_co_cb.cp.active)) {
+                recfg_needed = TRUE;
             }
+
+            /* if remote side requests a restricted notify sinks preferred bitpool range as all other params are
+                already checked for validify */
+            APPL_TRACE_EVENT("remote peer setconfig bitpool range [%d:%d]",
+                                p_codec_info[BTA_AV_CO_SBC_MIN_BITPOOL_OFF],
+                                p_codec_info[BTA_AV_CO_SBC_MAX_BITPOOL_OFF] );
+
+            bta_av_co_cb.codec_cfg_setconfig.id = BTC_AV_CODEC_SBC;
+            memcpy(bta_av_co_cb.codec_cfg_setconfig.info, p_codec_info, AVDT_CODEC_SIZE);
+            if (AVDT_TSEP_SNK == t_local_sep) {
+                /* If Peer is SRC, and our cfg subset matches with what is requested by peer, then
+                                        just accept what peer wants */
+                memcpy(bta_av_co_cb.codec_cfg.info, p_codec_info, AVDT_CODEC_SIZE);
+                recfg_needed = FALSE;
+            }
+
             /* Protect access to bta_av_co_cb.codec_cfg */
             osi_mutex_global_unlock();
         } else {
@@ -989,7 +958,9 @@ void *bta_av_co_audio_src_data_path(tBTA_AV_CODEC codec_type, UINT32 *p_len,
 
 
         default:
-            APPL_TRACE_ERROR("bta_av_co_audio_src_data_path Unsupported codec type (%d)", codec_type);
+            /* Retrieve the timestamp information from the media packet */
+            *p_timestamp = *((UINT32 *) (p_buf + 1));
+            APPL_TRACE_WARNING("bta_av_co_audio_src_data_path Unsupported codec type (%d)", codec_type);
             break;
         }
 #if defined(BTA_AV_CO_CP_SCMS_T) && (BTA_AV_CO_CP_SCMS_T == TRUE)
@@ -1081,8 +1052,8 @@ static BOOLEAN bta_av_co_audio_codec_build_config(const UINT8 *p_codec_caps, UIN
                          p_codec_cfg[BTA_AV_CO_SBC_MAX_BITPOOL_OFF]);
         break;
     default:
-        APPL_TRACE_ERROR("bta_av_co_audio_codec_build_config: unsupported codec id %d", bta_av_co_cb.codec_cfg.id);
-        return FALSE;
+        memcpy(p_codec_cfg, bta_av_co_cb.codec_cfg.info, AVDT_CODEC_SIZE);
+        APPL_TRACE_WARNING("bta_av_co_audio_codec_build_config: unknown codec id %d", bta_av_co_cb.codec_cfg.id);
         break;
     }
     return TRUE;
@@ -1097,12 +1068,16 @@ static BOOLEAN bta_av_co_audio_codec_build_config(const UINT8 *p_codec_caps, UIN
  ** Returns          TRUE if it codec config is supported, FALSE otherwise
  **
  *******************************************************************************/
-static BOOLEAN bta_av_co_audio_codec_cfg_matches_caps(UINT8 codec_id, const UINT8 *p_codec_caps, const UINT8 *p_codec_cfg)
+static BOOLEAN bta_av_co_audio_codec_cfg_matches_caps(const UINT8 *p_codec_caps, const UINT8 *p_codec_cfg)
 {
     FUNC_TRACE();
+    tA2D_CODEC codec_id = A2D_GetCodecType(p_codec_caps);
+    if (codec_id == A2D_CODEC_INVALID || codec_id != A2D_GetCodecType(p_codec_cfg)) {
+        return FALSE;
+    }
 
     switch (codec_id) {
-    case BTC_AV_CODEC_SBC:
+    case A2D_CODEC_SBC:
 
         APPL_TRACE_EVENT("bta_av_co_audio_codec_cfg_matches_caps : min %d/%d max %d/%d",
                          p_codec_caps[BTA_AV_CO_SBC_MIN_BITPOOL_OFF],
@@ -1146,7 +1121,7 @@ static BOOLEAN bta_av_co_audio_codec_match(const UINT8 *p_codec_caps)
 {
     FUNC_TRACE();
 
-    return bta_av_co_audio_codec_cfg_matches_caps(bta_av_co_cb.codec_cfg.id, p_codec_caps, bta_av_co_cb.codec_cfg.info);
+    return bta_av_co_audio_codec_cfg_matches_caps(p_codec_caps, bta_av_co_cb.codec_cfg.info);
 }
 
 /*******************************************************************************
@@ -1258,27 +1233,33 @@ static BOOLEAN bta_av_co_audio_sink_supports_cp(const tBTA_AV_CO_SINK *p_sink)
 static BOOLEAN bta_av_co_audio_peer_supports_codec(tBTA_AV_CO_PEER *p_peer, UINT8 *p_snk_index)
 {
     int index;
-    UINT8 codec_type;
+    tA2D_CODEC codec_type;
     FUNC_TRACE();
 
     /* Configure the codec type to look for */
-    codec_type = bta_av_co_cb.codec_cfg.id;
+    codec_type = A2D_GetCodecType(bta_av_co_cb.codec_cfg.info);
+    if (codec_type == A2D_CODEC_INVALID) {
+        return FALSE;
+    }
 
+    APPL_TRACE_DEBUG("bta_av_co_audio_peer_supports_codec: target codec type %d", codec_type);
+    
 
     for (index = 0; index < p_peer->num_sup_snks; index++) {
-        if (p_peer->snks[index].codec_type == codec_type) {
-            switch (bta_av_co_cb.codec_cfg.id) {
-            case BTC_AV_CODEC_SBC:
-                if (p_snk_index) {
-                    *p_snk_index = index;
-                }
+        tA2D_CODEC snk_codec_type = A2D_GetCodecType(p_peer->snks[index].codec_caps);
+        if (snk_codec_type == codec_type) {
+            if (p_snk_index) {
+                *p_snk_index = index;
+            }
+            switch (codec_type) {
+            case A2D_CODEC_SBC:
                 return bta_av_co_audio_codec_match(p_peer->snks[index].codec_caps);
                 break;
 
 
             default:
-                APPL_TRACE_ERROR("bta_av_co_audio_peer_supports_codec: unsupported codec id %d", bta_av_co_cb.codec_cfg.id);
-                return FALSE;
+                APPL_TRACE_WARNING("bta_av_co_audio_peer_supports_codec: unsupported codec type %d, treating codec type match as cap match", codec_type);
+                return TRUE;
                 break;
             }
         }
@@ -1421,9 +1402,7 @@ static UINT8 bta_av_co_audio_media_supports_config(UINT8 codec_type, const UINT8
 static BOOLEAN bta_av_co_audio_src_supports_pref_cfg(void)
 {
 #if (BTC_AV_EXT_CODEC == TRUE)
-    return (bta_av_co_cb.codec_pref_cfg.id == bta_av_co_cb.codec_caps.id &&
-            bta_av_sbc_cfg_in_external_codec_cap((UINT8 *)&bta_av_co_cb.codec_pref_cfg.info,
-                                             (UINT8 *)&bta_av_co_cb.codec_caps.info) == A2D_SUCCESS);
+    return TRUE;
 #else
     return (bta_av_co_cb.codec_pref_cfg.id == BTC_AV_CODEC_SBC &&
             bta_av_sbc_cfg_in_cap((UINT8 *)&bta_av_co_cb.codec_pref_cfg.info,
@@ -1576,6 +1555,7 @@ BOOLEAN bta_av_co_audio_set_pref_mcc(tBTA_AV_HNDL hndl, tBTC_AV_CODEC_INFO *pref
             } else if (bta_av_co_audio_peer_supports_codec(p_peer, &snk_index)) {
                 /* Current sink doesn't support, find another one that does */
                 p_sink = &p_peer->snks[snk_index];
+                APPL_TRACE_DEBUG("bta_av_co_audio_set_pref_mcc connection 0x%x changing to sink %d", hndl, snk_index);
                 /* Check that this sink is compatible with the CP */
                 if (!bta_av_co_audio_sink_supports_cp(p_sink)) {
                     APPL_TRACE_DEBUG("bta_av_co_audio_set_pref_mcc connection 0x%x sink %d doesn't support cp", hndl, snk_index);
@@ -1751,7 +1731,7 @@ void bta_av_co_audio_codec_reset(void)
         APPL_TRACE_DEBUG("bta_av_co_audio_codec_reset preferred codec configuration is not set");
         break;
     }
-    case BTC_AV_CODEC_SBC: {
+    default: {
         if (bta_av_co_audio_src_supports_pref_cfg()) {
             pref_cfg_supported = TRUE;
         } else {
@@ -1759,10 +1739,6 @@ void bta_av_co_audio_codec_reset(void)
         }
         break;
     }
-
-    default:
-        APPL_TRACE_ERROR("bta_av_co_audio_codec_reset bad pref cfg id %d", bta_av_co_cb.codec_pref_cfg.id);
-        break;
     }
 #endif
 
@@ -2066,7 +2042,7 @@ BOOLEAN bta_av_co_get_remote_bitpool_pref(UINT8 *min, UINT8 *max)
  ** Returns          TRUE if sink capabilities are available, FALSE otherwise
  **
  *******************************************************************************/
-BOOLEAN bta_av_co_get_peer_sink_caps(tBTA_AV_HNDL hndl, UINT8 *p_codec_caps, UINT8 *p_codec_type)
+BOOLEAN bta_av_co_get_peer_sink_caps(tBTA_AV_HNDL hndl, UINT8 *p_codec_caps, UINT32 *p_codec_caps_len)
 {
     tBTA_AV_CO_PEER *p_peer;
     tBTA_AV_CO_SINK *p_sink;
@@ -2080,23 +2056,14 @@ BOOLEAN bta_av_co_get_peer_sink_caps(tBTA_AV_HNDL hndl, UINT8 *p_codec_caps, UIN
         return FALSE;
     }
 
-    /* Check if we have a selected sink */
-    if (p_peer->p_snk == NULL) {
-        APPL_TRACE_ERROR("bta_av_co_get_peer_sink_caps no sink selected");
-        return FALSE;
+    UINT32 max_len = *p_codec_caps_len;
+    UINT32 i;
+
+    for (i = 0; i < max_len && i < p_peer->num_snks; i++) {
+        memcpy(p_codec_caps + (i * AVDT_CODEC_SIZE), p_peer->snks[i].codec_caps, AVDT_CODEC_SIZE);
     }
 
-    p_sink = p_peer->p_snk;
-
-    /* Copy the codec capabilities */
-    if (p_codec_caps) {
-        memcpy(p_codec_caps, p_sink->codec_caps, AVDT_CODEC_SIZE);
-    }
-
-    /* Copy the codec type */
-    if (p_codec_type) {
-        *p_codec_type = p_sink->codec_type;
-    }
+    *p_codec_caps_len = i;
 
     return TRUE;
 }
