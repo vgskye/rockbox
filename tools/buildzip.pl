@@ -698,6 +698,12 @@ sub buildzip {
 # codecs and plugin maps add up
 #    find(find_copyfile(qr/\.(map)/, abs_path("$temp_dir/debug")), 'lib');
 #    find(find_copyfile(qr/\.(map)/, abs_path("$temp_dir/debug")), 'apps/plugins');
+
+    # Copy device-specific firmware files
+    glob_mkdir("$temp_dir/fw");
+    if(-d "$ROOT/device_fw/$modelname") {
+        glob_copy("$ROOT/device_fw/$modelname/*", "$temp_dir/fw");
+    }
 }
 
 my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
