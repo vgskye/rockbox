@@ -1491,4 +1491,8 @@ Lyre prototype 1 */
 #define ucschar_t unsigned short
 #endif
 
+#ifdef HAVE_BLUETOOTH
+#define HAVE_MULTIMEDIA_KEYS
+#endif
+
 #endif /* __CONFIG_H__ */
