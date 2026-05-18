@@ -1912,6 +1912,9 @@ target/mips/ingenic_x1000/erosqnative/lcd-erosqnative.c
 target/mips/ingenic_x1000/erosqnative/power-erosqnative.c
 target/mips/ingenic_x1000/sdmmc-x1000-common.c
 target/mips/ingenic/spl-nand-ingenic.c
+#ifndef BOOTLOADER
+target/mips/ingenic_x1000/erosqnative/hci-erosqnative.c
+#endif /* BOOTLOADER */
 #endif /* EROS_QN */
 
 #if defined(AGPTEK_ROCKER_NATIVE)
