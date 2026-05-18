@@ -97,6 +97,15 @@ BOOLEAN btc_a2dp_source_enqueue_audio_frame(BT_HDR *p_buf)
     return TRUE;
 }
 
+size_t esp_a2d_source_audio_queue_len(void) {
+    if (btc_a2dp_source_state != BTC_A2DP_SOURCE_STATE_ON) {
+        APPL_TRACE_WARNING("%s source not start up", __func__);
+        return 0;
+    }
+
+    return fixed_queue_length(a2dp_source_local_param.audio_tx_q);
+}
+
 void btc_source_report_delay_value(UINT16 delay_value)
 {
     esp_a2d_cb_param_t param;
