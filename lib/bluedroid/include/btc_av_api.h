@@ -31,10 +31,14 @@ extern "C" {
  *****************************************************************************/
 
 /* Codec type */
-#define BTC_AV_CODEC_NONE       0xFF
 #define BTC_AV_CODEC_SBC        A2D_MEDIA_CT_SBC        /* SBC media codec type */
+#define BTC_AV_CODEC_M12        A2D_MEDIA_CT_M12        /* MPEG-1, 2 Audio media codec type */
+#define BTC_AV_CODEC_M24        A2D_MEDIA_CT_M24        /* MPEG-2, 4 AAC media codec type */
+#define BTC_AV_CODEC_ATRAC      A2D_MEDIA_CT_ATRAC      /* ATRAC family media codec type */
+#define BTC_AV_CODEC_NON_A2DP   A2D_MEDIA_CT_NON_A2DP   /* Vendor specific media codec type */
 
-#define BTC_AV_CODEC_PCM        0x5                     /* Raw PCM */
+#define BTC_AV_CODEC_PCM        0xFD                    /* Raw PCM */
+#define BTC_AV_CODEC_NONE       0xFE
 
 typedef UINT8 tBTC_AV_CODEC_ID;
 
