@@ -360,7 +360,7 @@ else
 $(BUILDDIR)/rockbox.zip: build
 endif
 	$(call PRINTS,ZIP rockbox$(ZIPFILESUFFIX).zip)
-	$(SILENT)$(TOOLSDIR)/buildzip.pl $(VERBOSEOPT) --app=$(APPLICATION) -m \"$(MODELNAME)\" -i \"$(TARGET_ID)\" -o $(BUILDDIR)/rockbox$(ZIPFILESUFFIX).zip -r "$(ROOTDIR)" --rbdir="$(RBDIR)" $(BUILDZIPOPTS) $(TARGET) $(BINARY)
+	$(SILENT)$(TOOLSDIR)/buildzip.pl $(VERBOSEOPT) --app=$(APPLICATION) -m "$(MODELNAME)" -i "$(TARGET_ID)" -o $(BUILDDIR)/rockbox$(ZIPFILESUFFIX).zip -r "$(ROOTDIR)" --rbdir="$(RBDIR)" $(BUILDZIPOPTS) $(TARGET) $(BINARY)
 ifneq ($(REPRODUCIBLE_ZIP),)
 	$(SILENT)strip-nondeterminism $(BUILDDIR)/rockbox$(ZIPFILESUFFIX).zip
 endif
@@ -377,7 +377,7 @@ else
 $(BUILDDIR)/rockbox.7z: build
 endif
 	$(call PRINTS,7Z rockbox$(ZIPFILESUFFIX).7z)
-	$(SILENT)$(TOOLSDIR)/buildzip.pl $(VERBOSEOPT) --app=$(APPLICATION) -m \"$(MODELNAME)\" -i \"$(TARGET_ID)\"  -o $(BUILDDIR)/rockbox$(ZIPFILESUFFIX).7z  -z "7za a -mx=9" -r "$(ROOTDIR)" --rbdir="$(RBDIR)" $(BUILDZIPOPTS) $(TARGET) $(BINARY)
+	$(SILENT)$(TOOLSDIR)/buildzip.pl $(VERBOSEOPT) --app=$(APPLICATION) -m "$(MODELNAME)" -i "$(TARGET_ID)"  -o $(BUILDDIR)/rockbox$(ZIPFILESUFFIX).7z  -z "7za a -mx=9" -r "$(ROOTDIR)" --rbdir="$(RBDIR)" $(BUILDZIPOPTS) $(TARGET) $(BINARY)
 
 ifneq ($(NODEPS),)
 $(BUILDDIR)/rockbox.tar:
@@ -386,7 +386,7 @@ $(BUILDDIR)/rockbox.tar: build
 endif
 	$(SILENT)rm -f rockbox.tar
 	$(call PRINTS,TAR $(notdir $@))
-	$(SILENT)$(TOOLSDIR)/buildzip.pl $(VERBOSEOPT) --app=$(APPLICATION) -m \"$(MODELNAME)\" -i \"$(TARGET_ID)\"  -o $(BUILDDIR)/rockbox$(ZIPFILESUFFIX).tar -z "tar -cf" -r "$(ROOTDIR)" --rbdir="$(RBDIR)" $(BUILDZIPOPTS) $(TARGET) $(BINARY)
+	$(SILENT)$(TOOLSDIR)/buildzip.pl $(VERBOSEOPT) --app=$(APPLICATION) -m "$(MODELNAME)" -i "$(TARGET_ID)"  -o $(BUILDDIR)/rockbox$(ZIPFILESUFFIX).tar -z "tar -cf" -r "$(ROOTDIR)" --rbdir="$(RBDIR)" $(BUILDZIPOPTS) $(TARGET) $(BINARY)
 
 fullgzip: ZIPFILESUFFIX=-full
 fullgzip: fulltar gzip
