@@ -15,11 +15,7 @@
 **  Constants & Macros
 ********************************************************************************/
 
-enum {
-    BTC_SV_AV_AA_SBC_INDEX = 0,
-    BTC_SV_AV_AA_SBC_SINK_INDEX,
-    BTC_SV_AV_AA_SEP_INDEX  /* Last index */
-};
+#define BTC_SV_AV_AA_SEP_INDEX 16
 
 /*****************************************************************************
 **  Local data
@@ -282,7 +278,7 @@ BOOLEAN bta_av_co_get_remote_bitpool_pref(UINT8 *min, UINT8 *max);
  ** Returns          TRUE if sink capabilities are available, FALSE otherwise
  **
  *******************************************************************************/
-BOOLEAN bta_av_co_get_peer_sink_caps(tBTA_AV_HNDL hndl, UINT8 *p_codec_caps, UINT8 *p_codec_type);
+BOOLEAN bta_av_co_get_peer_sink_caps(tBTA_AV_HNDL hndl, UINT8 *p_codec_caps, UINT32 *p_codec_caps_len);
 
 #endif  ///BTA_AV_INCLUDED == TRUE
 

@@ -45,7 +45,7 @@
 
 /* Bluetooth */
 #define HAVE_BLUETOOTH
-#define BT_HEAP_SIZE       0x40000 /* 256 KiB */
+#define BT_HEAP_SIZE       0x80000 /* 512 KiB */
 
 /* LCD defines */
 #define CONFIG_LCD   LCD_EROSQ
