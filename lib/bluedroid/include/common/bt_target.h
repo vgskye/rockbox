@@ -2286,7 +2286,7 @@
 
 /* Number of simultaneous stream endpoints. */
 #ifndef AVDT_NUM_SEPS
-#define AVDT_NUM_SEPS               3
+#define AVDT_NUM_SEPS               32
 #endif
 
 /* Number of transport channels setup per media stream(audio or video) */
@@ -2311,7 +2311,7 @@
 
 /* Maximum size in bytes of the codec capabilities information element. */
 #ifndef AVDT_CODEC_SIZE
-#define AVDT_CODEC_SIZE             10
+#define AVDT_CODEC_SIZE             20
 #endif
 
 /* Maximum size in bytes of the content protection information element. */
