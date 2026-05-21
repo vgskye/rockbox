@@ -19,6 +19,7 @@
 #include "pcm-internal.h"
 #include "pcm.h"
 #include "pcm_sink.h"
+#include "pcm_sw_volume.h"
 #include "queue.h"
 #include "semaphore.h"
 #include "splash.h"
@@ -452,6 +453,7 @@ static bool sampr_switch_ongoing = false;
 static struct semaphore sink_control_sem;
 static struct event_queue sink_control_queue;
 static esp_a2d_mcc_t new_pref_mcc;
+struct pcm_sink bt_pcm_sink;
 
 static int sink_suspended = 1;
 
@@ -507,6 +509,11 @@ static void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param) {
                 fdprintf(gen_log_fd, "a2d %d %d %d\n", event, param->media_ctrl_stat.cmd, param->media_ctrl_stat.status);
             if (param->media_ctrl_stat.cmd == ESP_A2D_MEDIA_CTRL_CHECK_SRC_RDY) {
                 pcm_switch_sink(PCM_SINK_BLUETOOTH);
+                pcm_set_dc_offset(0);
+#ifdef AUDIOHW_HAVE_PRESCALER
+                pcm_set_prescaler(0);
+#endif /* AUDIOHW_HAVE_PRESCALER */
+                pcm_set_master_volume(0, 0);
             } else if (sampr_switch_ongoing && param->media_ctrl_stat.cmd == ESP_A2D_MEDIA_CTRL_SUSPEND) {
                 esp_a2d_source_set_pref_mcc(conn_hdl, &new_pref_mcc);
             }
@@ -794,19 +801,6 @@ size_t bt_read_pcm(uint8_t *buf, size_t len) {
     size_t written = 0;
     if (pcm_data_start != NULL && audio_locked == 0) {
         while (len > 0 && (pcm_data_size > 0 || get_new_buf_maybe())) {
-#if (PCM_NATIVE_BITDEPTH > 16)
-            size_t sent = MIN(pcm_data_size / 2, len);
-            int32_t *in = (int32_t *) pcm_data_start;
-            int16_t *out = (int16_t *) buf;
-            for (size_t i = 0; i < (sent / 2); i++) {
-                out[i] = in[i] >> (PCM_NATIVE_BITDEPTH - 16);
-            }
-            pcm_data_start += sent * 2;
-            pcm_data_size -= sent * 2;
-            buf += sent;
-            len -= sent;
-            written += sent;
-#else
             size_t sent = MIN(pcm_data_size, len);
             memcpy(buf, pcm_data_start, sent);
             pcm_data_start += sent;
@@ -814,7 +808,6 @@ size_t bt_read_pcm(uint8_t *buf, size_t len) {
             buf += sent;
             len -= sent;
             written += sent;
-#endif
         }
     } else {
         // Transmit digital silence
@@ -829,6 +822,8 @@ struct pcm_sink bt_pcm_sink = {
         .samprs       = NULL,
         .num_samprs   = -1,
         .default_freq = -1,
+        .sample_fmt   = -1,
+        .volume_type  = -1,
     },
     .ops = {
         .init     = bt_sink_init,
