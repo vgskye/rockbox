@@ -23,10 +23,23 @@
 
 #include "config.h"
 
+enum pcm_sink_sample_format {
+    PCM_SINK_SAMPLE_PACKED_16 = 16,
+    PCM_SINK_SAMPLE_24_PAD_32 = 24,
+    PCM_SINK_SAMPLE_PACKED_32 = 32
+};
+
+enum pcm_sink_volume_type {
+    PCM_SINK_HWVOL,
+    PCM_SINK_SWVOL,
+};
+
 struct pcm_sink_caps {
-    const unsigned long* samprs;
-    uint16_t             num_samprs;
-    uint16_t             default_freq;
+    const unsigned long*        samprs;
+    uint16_t                    num_samprs;
+    uint16_t                    default_freq;
+    enum pcm_sink_sample_format sample_fmt;
+    enum pcm_sink_volume_type   volume_type;
 };
 
 struct pcm_sink_ops {
