@@ -25,13 +25,17 @@
 
 enum pcm_sink_sample_format {
     PCM_SINK_SAMPLE_PACKED_16 = 16,
+#if defined(WANT_SWVOL) && defined(WANT_SWVOL_32)
     PCM_SINK_SAMPLE_24_PAD_32 = 24,
     PCM_SINK_SAMPLE_PACKED_32 = 32
+#endif
 };
 
 enum pcm_sink_volume_type {
     PCM_SINK_HWVOL,
+#ifdef WANT_SWVOL
     PCM_SINK_SWVOL,
+#endif
 };
 
 struct pcm_sink_caps {

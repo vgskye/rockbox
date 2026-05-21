@@ -48,16 +48,6 @@ static uint32_t pcm_new_factor_l = 0, pcm_new_factor_r = 0;
 static uint32_t pcm_factor_l = 0, pcm_factor_r = 0;
 static typeof (memcpy) *pcm_scaling_fn = NULL;
 
-/* take care of some defines for 32-bit software vol */
-#if (PCM_NATIVE_BITDEPTH > 16) /* >16-bit */
-# define HAVE_SWVOL_32
-# define PCM_VOL_SAMPLE_SIZE    (2 * sizeof (int32_t))
-# define PCM_DBL_BUF_SIZE_T     int32_t
-#else /* 16-BIT */
-# define PCM_VOL_SAMPLE_SIZE    (2 * sizeof (int16_t))
-# define PCM_DBL_BUF_SIZE_T     int16_t
-#endif /* 16-BIT */
-
 #if !defined(PCM_DC_OFFSET_VALUE)
 /* PCM_DC_OFFSET_VALUE is only needed due to hardware quirk on Eros Q */
 # define PCM_DC_OFFSET_VALUE 0
@@ -71,7 +61,7 @@ static typeof (memcpy) *pcm_scaling_fn = NULL;
  * while negative values correspond to left shifts (where
  * the scaled result completely fits in the native sample).
  */
-#define PCM_SCALE_SHIFT (16 + PCM_SW_VOLUME_FRACBITS - PCM_NATIVE_BITDEPTH)
+#define PCM_SCALE_SHIFT(depth) (16 + PCM_SW_VOLUME_FRACBITS - (depth))
 
 /***
  ** Volume scaling routines
@@ -85,20 +75,34 @@ static typeof (memcpy) *pcm_scaling_fn = NULL;
 #define PCM_F_T int64_t /* Requires large integer math */
 #endif /* PCM_SW_VOLUME_FRACBITS */
 
+#ifdef WANT_SWVOL_32
+static int32_t pcm_scale_shift;
+
 /* Scale sample by PCM factor */
 static inline int32_t pcm_scale_sample(PCM_F_T f, int32_t s)
 {
-#if PCM_SCALE_SHIFT > 0
-    return (f * s + PCM_DC_OFFSET_VALUE) >> PCM_SCALE_SHIFT;
+    if (pcm_scale_shift > 0)
+        return (f * s + PCM_DC_OFFSET_VALUE) >> pcm_scale_shift;
+    else
+        return (f * s + PCM_DC_OFFSET_VALUE) << (-pcm_scale_shift);
+}
 #else
-    return (f * s + PCM_DC_OFFSET_VALUE) << (-PCM_SCALE_SHIFT);
+/* Scale sample by PCM factor */
+static inline int32_t pcm_scale_sample(PCM_F_T f, int32_t s)
+{
+#if PCM_SCALE_SHIFT(16) > 0
+    return (f * s + PCM_DC_OFFSET_VALUE) >> PCM_SCALE_SHIFT(16);
+#else
+    return (f * s + PCM_DC_OFFSET_VALUE) << (-PCM_SCALE_SHIFT(16));
 #endif
 }
+#endif
 
+#ifdef WANT_SWVOL_32
 /* Either cut (both <= UNITY), no clipping needed */
-static void * pcm_scale_buffer_cut(void *dst, const void *src, size_t src_size)
+static void * pcm_scale_buffer_cut_32(void *dst, const void *src, size_t src_size)
 {
-    PCM_DBL_BUF_SIZE_T *d = dst;
+    uint32_t *d = dst;
     const int16_t *s = src;
     uint32_t factor_l = pcm_factor_l, factor_r = pcm_factor_r;
 
@@ -112,29 +116,10 @@ static void * pcm_scale_buffer_cut(void *dst, const void *src, size_t src_size)
     return dst;
 }
 
-#if !defined(HAVE_SWVOL_32) /* NOTE: 32-bit scaling is hardcoded to the cut function! */
-/* Either boost (any > UNITY) requires clipping */
-static void * pcm_scale_buffer_boost(void *dst, const void *src, size_t src_size)
-{
-    int16_t *d = dst;
-    const int16_t *s = src;
-    uint32_t factor_l = pcm_factor_l, factor_r = pcm_factor_r;
-
-    while (src_size)
-    {
-        *d++ = clip_sample_16(pcm_scale_sample(factor_l, *s++));
-        *d++ = clip_sample_16(pcm_scale_sample(factor_r, *s++));
-        src_size -= PCM_SAMPLE_SIZE;
-    }
-
-    return dst;
-}
-#endif
-
 /* Transition the volume change smoothly across a frame */
-static void * pcm_scale_buffer_trans(void *dst, const void *src, size_t src_size)
+static void * pcm_scale_buffer_trans_32(void *dst, const void *src, size_t src_size)
 {
-    PCM_DBL_BUF_SIZE_T *d = dst;
+    uint32_t *d = dst;
     const int16_t *s = src;
     uint32_t factor_l = pcm_factor_l, factor_r = pcm_factor_r;
 
@@ -152,14 +137,75 @@ static void * pcm_scale_buffer_trans(void *dst, const void *src, size_t src_size
         int32_t sweep = (1 << 14) - fp14_cos(180*done / src_size); /* 0.0..2.0 */
         uint32_t f_l = fp_mul(sweep, diff_l, 15) + factor_l;
         uint32_t f_r = fp_mul(sweep, diff_r, 15) + factor_r;
-#if defined(HAVE_SWVOL_32)
         /* do not clip to 16 bits */
         *d++ = pcm_scale_sample(f_l, *s++);
         *d++ = pcm_scale_sample(f_r, *s++);
-#else
+    }
+
+    /* Select steady-state operation */
+    pcm_sync_pcm_factors();
+
+    return dst;
+}
+#endif /* WANT_SWVOL_32 */
+
+/* Either cut (both <= UNITY), no clipping needed */
+static void * pcm_scale_buffer_cut(void *dst, const void *src, size_t src_size)
+{
+    uint16_t *d = dst;
+    const int16_t *s = src;
+    uint32_t factor_l = pcm_factor_l, factor_r = pcm_factor_r;
+
+    while (src_size)
+    {
+        *d++ = pcm_scale_sample(factor_l, *s++);
+        *d++ = pcm_scale_sample(factor_r, *s++);
+        src_size -= PCM_SAMPLE_SIZE;
+    }
+
+    return dst;
+}
+
+/* Either boost (any > UNITY) requires clipping */
+static void * pcm_scale_buffer_boost(void *dst, const void *src, size_t src_size)
+{
+    int16_t *d = dst;
+    const int16_t *s = src;
+    uint32_t factor_l = pcm_factor_l, factor_r = pcm_factor_r;
+
+    while (src_size)
+    {
+        *d++ = clip_sample_16(pcm_scale_sample(factor_l, *s++));
+        *d++ = clip_sample_16(pcm_scale_sample(factor_r, *s++));
+        src_size -= PCM_SAMPLE_SIZE;
+    }
+
+    return dst;
+}
+
+/* Transition the volume change smoothly across a frame */
+static void * pcm_scale_buffer_trans(void *dst, const void *src, size_t src_size)
+{
+    uint16_t *d = dst;
+    const int16_t *s = src;
+    uint32_t factor_l = pcm_factor_l, factor_r = pcm_factor_r;
+
+    /* Transition from the old value to the new value using an inverted cosinus
+       from PI..0 in order to minimize amplitude-modulated harmonics generation
+       (zipper effects). */
+    uint32_t new_factor_l = pcm_new_factor_l;
+    uint32_t new_factor_r = pcm_new_factor_r;
+
+    int32_t diff_l = (int32_t)new_factor_l - (int32_t)factor_l;
+    int32_t diff_r = (int32_t)new_factor_r - (int32_t)factor_r;
+
+    for (size_t done = 0; done < src_size; done += PCM_SAMPLE_SIZE)
+    {
+        int32_t sweep = (1 << 14) - fp14_cos(180*done / src_size); /* 0.0..2.0 */
+        uint32_t f_l = fp_mul(sweep, diff_l, 15) + factor_l;
+        uint32_t f_r = fp_mul(sweep, diff_r, 15) + factor_r;
         *d++ = clip_sample_16(pcm_scale_sample(f_l, *s++));
         *d++ = clip_sample_16(pcm_scale_sample(f_r, *s++));
-#endif
     }
 
     /* Select steady-state operation */
@@ -169,9 +215,6 @@ static void * pcm_scale_buffer_trans(void *dst, const void *src, size_t src_size
 }
 
 /* Called by completion routine to scale the next buffer of samples */
-#ifndef PCM_SW_VOLUME_UNBUFFERED
-static inline
-#endif
 void pcm_sw_volume_copy_buffer(void *dst, const void *src, size_t src_size)
 {
     pcm_scaling_fn(dst, src, src_size);
@@ -189,9 +232,15 @@ void pcm_sync_pcm_factors(void)
 /* NOTE: 32-bit scaling is limited to 0 db <--> -74 db, we will hardcode to cut.
  *       MEMCPY CANNOT BE USED, because we do need to at minimum multiply each
  *       sample up to 32-bit size. */
-#if defined(HAVE_SWVOL_32)
-    pcm_scaling_fn = pcm_scale_buffer_cut;
-#else
+#ifdef WANT_SWVOL_32
+    int bit_depth = pcm_current_sink_caps()->sample_fmt;
+    pcm_scale_shift = PCM_SCALE_SHIFT(bit_depth);
+    if (bit_depth > PCM_SINK_SAMPLE_PACKED_16)
+    {
+        pcm_scaling_fn = pcm_scale_buffer_cut_32;
+        return;
+    }
+#endif
 
     if (new_factor_l == PCM_FACTOR_UNITY &&
         new_factor_r == PCM_FACTOR_UNITY)
@@ -207,10 +256,8 @@ void pcm_sync_pcm_factors(void)
     {
         pcm_scaling_fn = pcm_scale_buffer_boost;
     }
-#endif
 }
 
-#ifndef PCM_SW_VOLUME_UNBUFFERED
 /* source buffer from client */
 static const void * volatile src_buf_addr = NULL;
 static size_t volatile src_buf_rem = 0;
@@ -218,8 +265,13 @@ static size_t volatile src_buf_rem = 0;
 #define PCM_PLAY_DBL_BUF_SIZE (PCM_PLAY_DBL_BUF_SAMPLE*PCM_VOL_SAMPLE_SIZE)
 
 /* double buffer and frame length control */
-static PCM_DBL_BUF_SIZE_T pcm_dbl_buf[2][PCM_PLAY_DBL_BUF_SAMPLES*2]
+#ifdef WANT_SWVOL_32
+static uint32_t pcm_dbl_buf[2][PCM_PLAY_DBL_BUF_SAMPLES*2]
         PCM_DBL_BUF_BSS MEM_ALIGN_ATTR;
+#else
+static uint16_t pcm_dbl_buf[2][PCM_PLAY_DBL_BUF_SAMPLES*2]
+        PCM_DBL_BUF_BSS MEM_ALIGN_ATTR;
+#endif
 static size_t pcm_dbl_buf_size[2];
 static int pcm_dbl_buf_num = 0;
 static size_t frame_size;
@@ -227,7 +279,7 @@ static unsigned int frame_count, frame_err, frame_frac;
 
 /** Overrides of certain functions in pcm.c and pcm-internal.h **/
 
-bool pcm_play_dma_complete_callback(enum pcm_dma_status status,
+bool pcm_play_dma_complete_callback_swvol(enum pcm_dma_status status,
                                     const void **addr, size_t *size)
 {
     /* Check status callback first if error */
@@ -240,6 +292,10 @@ bool pcm_play_dma_complete_callback(enum pcm_dma_status status,
     {
         /* Do next chunk */
         *addr = pcm_dbl_buf[pcm_dbl_buf_num];
+#ifdef WANT_SWVOL_32
+        if (pcm_current_sink_caps()->sample_fmt > PCM_SINK_SAMPLE_PACKED_16)
+            sz *= 2;
+#endif
         *size = sz;
         return true;
     }
@@ -256,25 +312,24 @@ bool pcm_play_dma_complete_callback(enum pcm_dma_status status,
    in one chunk */
 static void update_frame_params(size_t size)
 {
-    /* multiply by 2 for 32 bit, optimize away to 1 for 16 bit */
-    int count    = (size * (sizeof(PCM_DBL_BUF_SIZE_T)/sizeof(int16_t))) / PCM_VOL_SAMPLE_SIZE;
+    int count    = size / 4;
     frame_count  = (count + PCM_PLAY_DBL_BUF_SAMPLES - 1) /
                    PCM_PLAY_DBL_BUF_SAMPLES;
     int perframe = count / frame_count;
-    frame_size   = perframe * PCM_VOL_SAMPLE_SIZE;
+    frame_size   = perframe;
     frame_frac   = count - perframe * frame_count;
     frame_err    = 0;
 }
 
 /* Obtain the next buffer and prepare it for pcm driver playback */
 enum pcm_dma_status
-pcm_play_dma_status_callback_int(enum pcm_dma_status status)
+pcm_play_dma_status_callback_int_swvol(enum pcm_dma_status status)
 {
     if (status != PCM_DMAST_STARTED)
         return status;
 
     /* divide by 2 for 32 bit, optimize away to 1 for 16 bit */
-    size_t size = pcm_dbl_buf_size[pcm_dbl_buf_num] / (sizeof(PCM_DBL_BUF_SIZE_T)/sizeof(int16_t));
+    size_t size = pcm_dbl_buf_size[pcm_dbl_buf_num];
     const void *addr = src_buf_addr + size;
 
     size = src_buf_rem - size;
@@ -290,8 +345,7 @@ pcm_play_dma_status_callback_int(enum pcm_dma_status status)
 
     if (size != 0)
     {
-        /* multiply by 2 for 32 bit, optimize away to 1 for 16 bit */
-        size = frame_size / (sizeof(PCM_DBL_BUF_SIZE_T)/sizeof(int16_t));
+        size = frame_size * 4;
 
         if ((frame_err += frame_frac) >= frame_count)
         {
@@ -302,7 +356,7 @@ pcm_play_dma_status_callback_int(enum pcm_dma_status status)
 
     pcm_dbl_buf_num ^= 1;
     /* multiply by 2 for 32 bit, optimize away to 1 for 16 bit */
-    pcm_dbl_buf_size[pcm_dbl_buf_num] = size * (sizeof(PCM_DBL_BUF_SIZE_T)/sizeof(int16_t));
+    pcm_dbl_buf_size[pcm_dbl_buf_num] = size;
     pcm_sw_volume_copy_buffer(pcm_dbl_buf[pcm_dbl_buf_num], addr, size);
 
     return PCM_DMAST_OK;
@@ -324,25 +378,27 @@ static void start_pcm(bool reframe)
     pcm_play_dma_status_callback(PCM_DMAST_STARTED);
     pcm_play_dma_status_callback(PCM_DMAST_STARTED);
 
+#ifdef WANT_SWVOL_32
+    if (pcm_current_sink_caps()->sample_fmt > PCM_SINK_SAMPLE_PACKED_16)
+        pcm_get_current_sink()->ops.play(pcm_dbl_buf[1], pcm_dbl_buf_size[1] * 2);
+    else
+#endif
     pcm_get_current_sink()->ops.play(pcm_dbl_buf[1], pcm_dbl_buf_size[1]);
 }
 
-void pcm_play_dma_start_int(const void *addr, size_t size)
+void pcm_play_dma_start_int_swvol(const void *addr, size_t size)
 {
     src_buf_addr = addr;
-    /* divide by 2 for 32 bit, optimize away to 1 for 16 bit */
-    src_buf_rem = size / (sizeof(PCM_DBL_BUF_SIZE_T)/sizeof(int16_t));
+    src_buf_rem = size;
     start_pcm(true);
 }
 
-void pcm_play_dma_stop_int(void)
+void pcm_play_dma_stop_int_swvol(void)
 {
     pcm_get_current_sink()->ops.stop();
     src_buf_addr = NULL;
     src_buf_rem = 0;
 }
-
-#endif /* PCM_SW_VOLUME_UNBUFFERED */
 
 
 /** Internal **/
@@ -377,7 +433,14 @@ static void pcm_sync_prescaler(void)
     pcm_new_factor_r = MIN(factor_r, PCM_FACTOR_MAX);
 
     if (pcm_new_factor_l != pcm_factor_l || pcm_new_factor_r != pcm_factor_r)
+    {
+#ifdef WANT_SWVOL_32
+        if (pcm_current_sink_caps()->sample_fmt > PCM_SINK_SAMPLE_PACKED_16)
+            pcm_scaling_fn = pcm_scale_buffer_trans_32;
+        else
+#endif
         pcm_scaling_fn = pcm_scale_buffer_trans;
+    }
 
     pcm_play_unlock();
 }
