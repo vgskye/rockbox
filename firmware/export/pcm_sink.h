@@ -23,10 +23,16 @@
 
 #include "config.h"
 
+enum pcm_sink_volume_type {
+    PCM_SINK_HWVOL,
+    PCM_SINK_SWVOL,
+};
+
 struct pcm_sink_caps {
-    const unsigned long* samprs;
-    uint16_t             num_samprs;
-    uint16_t             default_freq;
+    const unsigned long*        samprs;
+    uint16_t                    num_samprs;
+    uint16_t                    default_freq;
+    enum pcm_sink_volume_type   volume_type;
 };
 
 struct pcm_sink_ops {
