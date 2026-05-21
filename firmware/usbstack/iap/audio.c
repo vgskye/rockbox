@@ -187,6 +187,8 @@ struct pcm_sink iap_pcm_sink = {
         .samprs       = samprs,
         .num_samprs   = ARRAYLEN(samprs),
         .default_freq = 0,
+        .sample_fmt   = PCM_SINK_SAMPLE_PACKED_16,
+        .volume_type  = PCM_SINK_HWVOL,
     },
     .ops = {
         .init     = sink_nop,
