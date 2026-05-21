@@ -41,6 +41,7 @@ void pcm_set_prescaler(int prescale);
 
 /* Set the per-channel volume cut/gain for all PCM playback */
 void pcm_set_master_volume(int vol_l, int vol_r);
+void pcm_set_dc_offset(int offset);
 
 void pcm_play_dma_start_int_swvol(const void *addr, size_t size);
 void pcm_play_dma_stop_int_swvol(void);

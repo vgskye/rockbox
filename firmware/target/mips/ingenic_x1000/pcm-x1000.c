@@ -25,6 +25,7 @@
 #include "pcm.h"
 #include "pcm-internal.h"
 #include "pcm_sink.h"
+#include "pcm_sw_volume.h"
 #include "panic.h"
 #include "dma-x1000.h"
 #include "irq-x1000.h"
@@ -154,6 +155,9 @@ static void pcm_play_dma_int_cb(int event)
 
 static void sink_dma_start(const void* addr, size_t size)
 {
+#ifdef PCM_DC_OFFSET_VALUE
+    pcm_set_dc_offset(PCM_DC_OFFSET_VALUE);
+#endif
     play_dma_pending_event = DMA_EVENT_NONE;
     aic_state |= AIC_STATE_PLAYING;
 
