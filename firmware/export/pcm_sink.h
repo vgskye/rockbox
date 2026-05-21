@@ -25,7 +25,9 @@
 
 enum pcm_sink_volume_type {
     PCM_SINK_HWVOL,
+#ifdef WANT_SWVOL
     PCM_SINK_SWVOL,
+#endif
 };
 
 struct pcm_sink_caps {
