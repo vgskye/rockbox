@@ -24,7 +24,9 @@
 #include "config.h"
 
 #define PCM_SINK_HWVOL 0
+#ifdef WANT_SWVOL
 #define PCM_SINK_SWVOL 1
+#endif
 
 struct pcm_sink_caps {
     const unsigned long* samprs;
