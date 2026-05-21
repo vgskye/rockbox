@@ -48,11 +48,6 @@ static uint32_t pcm_new_factor_l = 0, pcm_new_factor_r = 0;
 static uint32_t pcm_factor_l = 0, pcm_factor_r = 0;
 static typeof (memcpy) *pcm_scaling_fn = NULL;
 
-#if !defined(PCM_DC_OFFSET_VALUE)
-/* PCM_DC_OFFSET_VALUE is only needed due to hardware quirk on Eros Q */
-# define PCM_DC_OFFSET_VALUE 0
-#endif
-
 /*
  * 16-bit samples are scaled up to an effective bit depth
  * of (16+fracbits) bits and must be shifted to produce a
@@ -75,6 +70,8 @@ static typeof (memcpy) *pcm_scaling_fn = NULL;
 #define PCM_F_T int64_t /* Requires large integer math */
 #endif /* PCM_SW_VOLUME_FRACBITS */
 
+static int32_t pcm_dc_offset = 0;
+
 #ifdef WANT_SWVOL_32
 static int32_t pcm_scale_shift;
 
@@ -82,18 +79,18 @@ static int32_t pcm_scale_shift;
 static inline int32_t pcm_scale_sample(PCM_F_T f, int32_t s)
 {
     if (pcm_scale_shift > 0)
-        return (f * s + PCM_DC_OFFSET_VALUE) >> pcm_scale_shift;
+        return (f * s + pcm_dc_offset) >> pcm_scale_shift;
     else
-        return (f * s + PCM_DC_OFFSET_VALUE) << (-pcm_scale_shift);
+        return (f * s + pcm_dc_offset) << (-pcm_scale_shift);
 }
 #else
 /* Scale sample by PCM factor */
 static inline int32_t pcm_scale_sample(PCM_F_T f, int32_t s)
 {
 #if PCM_SCALE_SHIFT(16) > 0
-    return (f * s + PCM_DC_OFFSET_VALUE) >> PCM_SCALE_SHIFT(16);
+    return (f * s + pcm_dc_offset) >> PCM_SCALE_SHIFT(16);
 #else
-    return (f * s + PCM_DC_OFFSET_VALUE) << (-PCM_SCALE_SHIFT(16));
+    return (f * s + pcm_dc_offset) << (-PCM_SCALE_SHIFT(16));
 #endif
 }
 #endif
@@ -460,4 +457,9 @@ void pcm_set_master_volume(int vol_l, int vol_r)
     vol_factor_l = pcm_centibels_to_factor(vol_l);
     vol_factor_r = pcm_centibels_to_factor(vol_r);
     pcm_sync_prescaler();
+}
+
+void pcm_set_dc_offset(int offset)
+{
+    pcm_dc_offset = offset;
 }
