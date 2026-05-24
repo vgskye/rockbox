@@ -761,7 +761,7 @@ long default_event_handler_ex(long event, void (*callback)(void *), void *parame
             resume = false;
             return SYS_CALL_HUNG_UP;
 #endif
-#if (CONFIG_PLATFORM & PLATFORM_HOSTED) && defined(PLATFORM_HAS_VOLUME_CHANGE)
+#ifdef PLATFORM_HAS_VOLUME_CHANGE
         case SYS_VOLUME_CHANGED:
         {
             static bool firstvolume = true;
