@@ -140,7 +140,7 @@ void a2dp_vendor_ldac_encoder_init(struct pcm_sink_caps *caps, const struct a2dp
   caps->default_freq = 0;
   caps->num_samprs = i;
   caps->sample_fmt = PCM_SINK_SAMPLE_PACKED_16;
-  caps->volume_type = PCM_SINK_SWVOL;
+  caps->volume_type = PCM_SINK_HWVOL;
 
   a2dP_ldac_encoder_cb.stats.session_start_us = current_tick;
 
