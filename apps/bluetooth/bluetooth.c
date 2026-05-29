@@ -509,11 +509,6 @@ static void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param) {
                 fdprintf(gen_log_fd, "a2d %d %d %d\n", event, param->media_ctrl_stat.cmd, param->media_ctrl_stat.status);
             if (param->media_ctrl_stat.cmd == ESP_A2D_MEDIA_CTRL_CHECK_SRC_RDY) {
                 pcm_switch_sink(PCM_SINK_BLUETOOTH);
-                pcm_set_dc_offset(0);
-#ifdef AUDIOHW_HAVE_PRESCALER
-                pcm_set_prescaler(0);
-#endif /* AUDIOHW_HAVE_PRESCALER */
-                pcm_set_master_volume(0, 0);
             } else if (sampr_switch_ongoing && param->media_ctrl_stat.cmd == ESP_A2D_MEDIA_CTRL_SUSPEND) {
                 esp_a2d_source_set_pref_mcc(conn_hdl, &new_pref_mcc);
             }

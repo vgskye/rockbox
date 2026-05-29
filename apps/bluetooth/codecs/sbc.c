@@ -142,7 +142,7 @@ void a2dp_sbc_encoder_init(struct pcm_sink_caps *caps, const struct a2dp_peer_in
   caps->default_freq = 0;
   caps->num_samprs = i;
   caps->sample_fmt = PCM_SINK_SAMPLE_PACKED_16;
-  caps->volume_type = PCM_SINK_SWVOL;
+  caps->volume_type = PCM_SINK_HWVOL;
 
   a2dp_sbc_encoder_cb.stats.session_start_us = current_tick;
   a2dp_sbc_encoder_cb.timestamp = 0;
