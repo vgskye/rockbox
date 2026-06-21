@@ -695,7 +695,7 @@ static void sbc_set_freq(uint32_t freq, esp_a2d_mcc_t *pref_mcc) {
 }
 
 static void sbc_debug_info(char * buffer, size_t buffer_len) {
-  snprintf(buffer, buffer_len, "bitpool %d", a2dp_sbc_encoder_cb.sbc_encoder_params.s16BitPool);
+  snprintf(buffer, buffer_len, "bitpool %d sampr %d", a2dp_sbc_encoder_cb.sbc_encoder_params.s16BitPool, a2dp_sbc_encoder_cb.sbc_encoder_params.s16SamplingFreq);
 }
 
 struct a2dp_codec a2dp_codec_sbc = {
