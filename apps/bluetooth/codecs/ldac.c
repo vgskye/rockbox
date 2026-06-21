@@ -206,6 +206,8 @@ static void a2dp_vendor_ldac_encoder_update(uint32_t freq, esp_a2d_mcc_t *pref_m
       return;  // TODO: Return an error?
     }
     a2dP_ldac_encoder_cb.has_ldac_handle = true;
+  } else {
+    ldacBT_close_handle(a2dP_ldac_encoder_cb.ldac_handle);
   }
   assert(a2dP_ldac_encoder_cb.ldac_handle != NULL);
 
@@ -537,9 +539,9 @@ static void ldac_set_freq(uint32_t freq, esp_a2d_mcc_t *pref_mcc) {
 
 static void ldac_debug_info(char * buffer, size_t buffer_len) {
   if (a2dP_ldac_encoder_cb.has_ldac_abr_handle) {
-    snprintf(buffer, buffer_len, "ABR eqmid %d", a2dP_ldac_encoder_cb.last_ldac_abr_eqmid);
+    snprintf(buffer, buffer_len, "ABR eqmid %d sampr %d", a2dP_ldac_encoder_cb.last_ldac_abr_eqmid, a2dP_ldac_encoder_cb.ldac_encoder_params.sample_rate);
   } else {
-    snprintf(buffer, buffer_len, "CBR eqmid %d", a2dP_ldac_encoder_cb.ldac_encoder_params.quality_mode_index);
+    snprintf(buffer, buffer_len, "CBR eqmid %d sampr %d", a2dP_ldac_encoder_cb.ldac_encoder_params.quality_mode_index, a2dP_ldac_encoder_cb.ldac_encoder_params.sample_rate);
   }
 }
 

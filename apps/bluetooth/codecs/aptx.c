@@ -388,6 +388,10 @@ static void aptx_set_freq(uint32_t freq, esp_a2d_mcc_t *pref_mcc) {
   a2dp_vendor_aptx_encoder_update(freq, pref_mcc, &restart_input, &restart_output, &config_updated);
 }
 
+static void aptx_debug_info(char * buffer, size_t buffer_len) {
+  snprintf(buffer, buffer_len, "sampr %d", a2dp_aptx_encoder_cb.sample_rate);
+}
+
 struct a2dp_codec a2dp_codec_aptx = {
     .codec_id = A2D_CODEC_APTX,
     .is_acceptable = aptx_is_acceptable,
@@ -398,4 +402,5 @@ struct a2dp_codec a2dp_codec_aptx = {
     .set_freq = aptx_set_freq,
     .feeding_reset = a2dp_vendor_aptx_feeding_reset,
     .feeding_flush = a2dp_vendor_aptx_feeding_flush,
+    .debug_info = aptx_debug_info,
 };
