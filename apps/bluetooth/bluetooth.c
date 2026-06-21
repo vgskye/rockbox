@@ -400,6 +400,9 @@ const char * bt_heap_info_getname(int selected_item, void * data, char * buffer,
             } else {
                 return "codec info: N/A";
             }
+        case 4:
+            snprintf(buffer, buffer_len, "real sink sampr: %lu", pcm_current_sink_caps()->samprs[pcm_get_current_sink()->configured_freq]);
+            return buffer;
         default:
             return "Unknown item!!";
     }
@@ -414,7 +417,7 @@ bool bt_heap_info(void)
     if (old_fd != -1)
         close(old_fd);
 
-    simplelist_info_init(&info, "Bluetooth debug info:", 4, NULL);
+    simplelist_info_init(&info, "Bluetooth debug info:", 5, NULL);
     info.scroll_all = false;
     info.action_callback = bt_heap_info_action_callback;
     info.get_name = bt_heap_info_getname;
@@ -757,9 +760,10 @@ void bt_sink_set_freq(uint16_t freq) {
     if (gen_log_fd != -1)
         fdprintf(gen_log_fd, "suspending playback: sampr switch start, to %d\n", freq);
 
+    bt_sink_suspend();
     current_codec->set_freq(bt_pcm_sink.caps.samprs[freq], &new_pref_mcc);
 
-    if (!bt_sink_suspend()) {
+    if (bt_current_state == ESP_A2D_AUDIO_STATE_SUSPEND) {
         esp_a2d_source_set_pref_mcc(conn_hdl, &new_pref_mcc);
     }
 }
