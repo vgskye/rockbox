@@ -190,7 +190,7 @@ int bt_action_callback(int action, struct gui_synclist *lists)
             }
             return ACTION_NONE;
         }
-        case ACTION_STD_HOTKEY: {
+        case ACTION_STD_MENU: {
             esp_bt_gap_cancel_discovery();
             esp_a2d_source_deinit();
             esp_avrc_tg_deinit();
