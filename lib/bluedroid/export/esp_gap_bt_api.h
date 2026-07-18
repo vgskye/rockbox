@@ -953,6 +953,9 @@ int esp_bt_gap_get_bond_device_num(void);
 */
 esp_err_t esp_bt_gap_get_bond_device_list(int *dev_num, esp_bd_addr_t *dev_list);
 
+esp_err_t esp_bt_gap_get_bond_device_property(esp_bd_addr_t bd_addr, const char *key, char *value, int *len);
+esp_err_t esp_bt_gap_set_bond_device_property(esp_bd_addr_t bd_addr, const char *key, const char *value, int len);
+
 /**
 * @brief            Set pin type and default pin code for legacy pairing.
 *
