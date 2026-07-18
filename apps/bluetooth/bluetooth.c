@@ -160,7 +160,12 @@ void bluetooth_enable_discover(void)
         esp_bt_gap_get_bond_device_list(&num_bonded_addrs, bonded_addrs);
         for (int i = 0; i < num_bonded_addrs; i++) {
             memcpy(bt_entries[i].addr, (bonded_addrs + i), ESP_BD_ADDR_LEN);
-            strncpy(bt_entries[i].name, "Fake entry for paired device", BT_MAX_NAME_LEN);
+            int len = BT_MAX_NAME_LEN - 1;
+            if (esp_bt_gap_get_bond_device_property(bt_entries[i].addr, "RbDeviceName", bt_entries[i].name, &len) == ESP_OK) {
+                bt_entries[i].name[len] = 0;
+            } else {
+                strncpy(bt_entries[i].name, "Unknown Paired Device", BT_MAX_NAME_LEN);
+            }
             bt_entries[i].rssi = -128;
             bt_entries[i].valid = true;
         }
@@ -223,7 +228,11 @@ const char * bt_getname(int selected_item, void * data, char * buffer, size_t bu
     if (selected_item % 2 == 0) {
         return entry->name;
     } else {
-        snprintf(buffer, buffer_len, "%d dBm " ESP_BD_ADDR_STR, entry->rssi, ESP_BD_ADDR_HEX(entry->addr));
+        if (entry->rssi == -128) {
+            snprintf(buffer, buffer_len, ESP_BD_ADDR_STR " (Saved)", ESP_BD_ADDR_HEX(entry->addr));
+        } else {
+            snprintf(buffer, buffer_len, "%d dBm " ESP_BD_ADDR_STR, entry->rssi, ESP_BD_ADDR_HEX(entry->addr));
+        }
         return buffer;
     }
 }
@@ -339,6 +348,15 @@ static void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *pa
                 pin_code[2] = '0';
                 pin_code[3] = '0';
                 esp_bt_gap_pin_reply(param->pin_req.bda, true, 4, pin_code);
+            }
+            break;
+        }
+        case ESP_BT_GAP_READ_REMOTE_NAME_EVT: {
+            if (gen_log_fd != -1)
+                fdprintf(gen_log_fd, "gap %d %d\n", event, param->read_rmt_name.stat);
+            if (param->read_rmt_name.stat == ESP_BT_STATUS_SUCCESS) {
+                param->read_rmt_name.rmt_name[BT_MAX_NAME_LEN - 1] = 0;
+                esp_bt_gap_set_bond_device_property(param->read_rmt_name.bda, "RbDeviceName", param->read_rmt_name.rmt_name, strlen(param->read_rmt_name.rmt_name));
             }
             break;
         }
@@ -498,6 +516,7 @@ static void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param) {
                 sink_suspended = 1;
                 sampr_switch_ongoing = false;
                 bt_current_state = ESP_A2D_AUDIO_STATE_SUSPEND;
+                esp_bt_gap_read_remote_name(param->conn_stat.remote_bda);
             } else if (param->conn_stat.state == ESP_A2D_CONNECTION_STATE_DISCONNECTED || param->conn_stat.state == ESP_A2D_CONNECTION_STATE_DISCONNECTING) {
                 if (current_codec != NULL) {
                     bt_current_state = ESP_A2D_AUDIO_STATE_SUSPEND;
