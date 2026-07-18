@@ -2969,8 +2969,8 @@ static const struct {
         {"Dump bootflash to file", dbg_bootflash_dump },
 #endif
 #ifdef HAVE_BLUETOOTH
-        { "Bluetooth test", bt_scan },
-        { "Bluetooth heap info", bt_heap_info },
+        { "Bluetooth menu", bt_scan },
+        { "Bluetooth debug info", bt_heap_info },
 #endif
 };
 
