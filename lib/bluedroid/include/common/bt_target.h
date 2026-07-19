@@ -339,10 +339,10 @@
 #define BLE_FEAT_ISO_60_EN     FALSE
 #endif
 
-#if (UC_BT_BLE_FEAT_ISO_BIG_BROCASTER == TRUE)
-#define BLE_FEAT_ISO_BIG_BROCASTER_EN   TRUE
+#if (UC_BT_BLE_FEAT_ISO_BIG_BROADCASTER == TRUE)
+#define BLE_FEAT_ISO_BIG_BROADCASTER_EN   TRUE
 #else
-#define BLE_FEAT_ISO_BIG_BROCASTER_EN   FALSE
+#define BLE_FEAT_ISO_BIG_BROADCASTER_EN   FALSE
 #endif
 
 #if (UC_BT_BLE_FEAT_ISO_BIG_SYNCER == TRUE)
@@ -441,6 +441,13 @@
 #define BT_BLE_FEAT_CHANNEL_SOUNDING     FALSE
 #endif
 
+/* LE Monitor Advertisement (Bluetooth Core 6.0) */
+#if (BLE_50_FEATURE_SUPPORT == TRUE) && (defined UC_BT_BLE_FEAT_ADV_MONITOR) && (UC_BT_BLE_FEAT_ADV_MONITOR == TRUE)
+#define BLE_FEAT_ADV_MONITOR     TRUE
+#else
+#define BLE_FEAT_ADV_MONITOR     FALSE
+#endif
+
 #if (UC_BT_BLE_VENDOR_HCI_EN == TRUE)
 #define BLE_VENDOR_HCI_EN TRUE
 #else
@@ -451,6 +458,24 @@
 #define BLE_HIGH_DUTY_ADV_INTERVAL TRUE
 #else
 #define BLE_HIGH_DUTY_ADV_INTERVAL FALSE
+#endif
+
+/* Host-side parameter validation floor (in 1.25 ms units) for the BLE
+ * connection interval. Internal to the Bluedroid host: not sent on air, not
+ * exposed via the GATT Preferred Connection Parameters Characteristic, and
+ * not a public API constant - those use BTM_BLE_CONN_INT_MIN (0x0006).
+ *
+ * When UC_BT_BLE_HOST_ALLOW_SUB_SPEC_MIN_CONN_INT == 1 the host stops
+ * enforcing a minimum (the actual lower limit is then defined entirely by
+ * the controller). 0x0001 is used rather than 0x0000 so the existing
+ * `uint16_t < MIN` range checks remain well-defined under GCC
+ * `-Wtype-limits`. */
+#ifndef BLE_CONN_INT_MIN_HOST_CHECK
+#if (UC_BT_BLE_HOST_ALLOW_SUB_SPEC_MIN_CONN_INT == 1)
+#define BLE_CONN_INT_MIN_HOST_CHECK             0x0001
+#else
+#define BLE_CONN_INT_MIN_HOST_CHECK             0x0006
+#endif
 #endif
 
 #if (UC_BT_BLE_RPA_SUPPORTED  == TRUE)
@@ -679,10 +704,6 @@
 
 #ifndef BTA_DM_QOS_INCLUDED
 #define BTA_DM_QOS_INCLUDED FALSE
-#endif
-
-#ifndef BTA_PAN_INCLUDED
-#define BTA_PAN_INCLUDED FALSE
 #endif
 
 #ifndef BTA_HD_INCLUDED

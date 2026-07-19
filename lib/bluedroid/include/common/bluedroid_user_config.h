@@ -309,9 +309,9 @@
 #endif
 
 #ifdef CONFIG_BT_BLE_FEAT_ISO_BIG_BROCASTER
-#define UC_BT_BLE_FEAT_ISO_BIG_BROCASTER            CONFIG_BT_BLE_FEAT_ISO_BIG_BROCASTER
+#define UC_BT_BLE_FEAT_ISO_BIG_BROADCASTER            CONFIG_BT_BLE_FEAT_ISO_BIG_BROCASTER
 #else
-#define UC_BT_BLE_FEAT_ISO_BIG_BROCASTER           FALSE
+#define UC_BT_BLE_FEAT_ISO_BIG_BROADCASTER           FALSE
 #endif
 
 #ifdef CONFIG_BT_BLE_FEAT_ISO_CIG_CENTRAL
@@ -394,6 +394,12 @@
 #define UC_BT_BLE_FEAT_CHANNEL_SOUNDING            FALSE
 #endif
 
+#ifdef CONFIG_BT_BLE_FEAT_ADV_MONITOR
+#define UC_BT_BLE_FEAT_ADV_MONITOR            CONFIG_BT_BLE_FEAT_ADV_MONITOR
+#else
+#define UC_BT_BLE_FEAT_ADV_MONITOR            FALSE
+#endif
+
 #ifdef CONFIG_BT_BLE_VENDOR_HCI_EN
 #define UC_BT_BLE_VENDOR_HCI_EN CONFIG_BT_BLE_VENDOR_HCI_EN
 #else
@@ -404,6 +410,18 @@
 #define UC_BT_BLE_HIGH_DUTY_ADV_INTERVAL CONFIG_BT_BLE_HIGH_DUTY_ADV_INTERVAL
 #else
 #define UC_BT_BLE_HIGH_DUTY_ADV_INTERVAL FALSE
+#endif
+
+/* When set to 1, the Bluedroid host's parameter validation no longer enforces
+ * a minimum BLE connection interval; the actual lower limit is then left to
+ * the controller. See BLE_CONN_INT_MIN_HOST_CHECK in common/bt_target.h.
+ *
+ * Do not turn this on manually in menuconfig unless you know the implications.
+ * In normal IDF builds it follows the active Controller integration. */
+#ifdef CONFIG_BT_BLE_HOST_ALLOW_SUB_SPEC_MIN_CONN_INT
+#define UC_BT_BLE_HOST_ALLOW_SUB_SPEC_MIN_CONN_INT      1
+#else
+#define UC_BT_BLE_HOST_ALLOW_SUB_SPEC_MIN_CONN_INT      0
 #endif
 
 //GATTS
