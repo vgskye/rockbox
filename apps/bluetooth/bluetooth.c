@@ -160,7 +160,7 @@ void bluetooth_enable_discover(void)
         esp_bt_gap_get_bond_device_list(&num_bonded_addrs, bonded_addrs);
         for (int i = 0; i < num_bonded_addrs; i++) {
             memcpy(bt_entries[i].addr, (bonded_addrs + i), ESP_BD_ADDR_LEN);
-            int len = BT_MAX_NAME_LEN - 1;
+            size_t len = BT_MAX_NAME_LEN - 1;
             if (esp_bt_gap_get_bond_device_property(bt_entries[i].addr, "RbDeviceName", bt_entries[i].name, &len) == ESP_OK) {
                 bt_entries[i].name[len] = 0;
             } else {

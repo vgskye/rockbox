@@ -1495,7 +1495,7 @@ Lyre prototype 1 */
 #define WANT_SWVOL
 #endif
 
-#if (PCM_NATIVE_BITDEPTH > 16)
+#if defined(PCM_NATIVE_BITDEPTH) && (PCM_NATIVE_BITDEPTH > 16)
 #define WANT_SWVOL_32
 #endif
 
