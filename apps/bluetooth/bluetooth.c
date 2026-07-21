@@ -1,4 +1,4 @@
-
+#define LOGF_ENABLE
 #include "action.h"
 #include "asm/thread.h"
 #include "bluetooth/codecs.h"
@@ -11,10 +11,7 @@
 #include "esp_bt_device.h"
 #include "esp_bt_main.h"
 #include "esp_gap_bt_api.h"
-#include "esp_log.h"
-#include "file.h"
 #include "list.h"
-#include "mutex.h"
 #include "panic.h"
 #include "pcm-internal.h"
 #include "pcm.h"
@@ -28,15 +25,11 @@
 #include "thread.h"
 #include "tick.h"
 #include "tlsf.h"
-#include "vuprintf.h"
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-static int gen_log_fd = -1;
-static struct mutex gen_log_mutex;
 
 #define BT_MAX_NAME_LEN 64
 #define BT_MAX_ENTRIES 64
@@ -70,8 +63,6 @@ void bluetooth_enable_discover(void)
     esp_err_t ret;
     if (esp_bluedroid_get_status() != ESP_BLUEDROID_STATUS_ENABLED) {
         splashf(0, "Enabling bluetooth...");
-        // gen_log_fd = open("/bt_log.txt", O_WRONLY | O_CREAT | O_TRUNC, 0666);
-        // mutex_init(&gen_log_mutex);
         bt_hci_enable();
         esp_bluedroid_config_t cfg = BT_BLUEDROID_INIT_CONFIG_DEFAULT();
         cfg.sc_en = true;
@@ -202,10 +193,6 @@ int bt_action_callback(int action, struct gui_synclist *lists)
             esp_bluedroid_disable();
             esp_bluedroid_deinit();
             bt_hci_disable();
-            int old_fd = gen_log_fd;
-            gen_log_fd = -1;
-            if (old_fd != -1)
-                close(old_fd);
             return ACTION_STD_CANCEL;
         }
         default:
@@ -313,22 +300,18 @@ static void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *pa
 {
     switch (event) {
         case ESP_BT_GAP_DISC_RES_EVT:
-            if (gen_log_fd != -1)
-                fdprintf(gen_log_fd, "gap %d " ESP_BD_ADDR_STR "\n", event, ESP_BD_ADDR_HEX(param->disc_res.bda));
+            logf("gap %d " ESP_BD_ADDR_STR, event, ESP_BD_ADDR_HEX(param->disc_res.bda));
             process_inquiry_scan_result(param);
             return;
         case ESP_BT_GAP_DISC_STATE_CHANGED_EVT:
-            if (gen_log_fd != -1)
-                fdprintf(gen_log_fd, "gap %d %d\n", event, param->disc_st_chg.state);
+            logf("gap %d %d", event, param->disc_st_chg.state);
             return;
         case ESP_BT_GAP_CFM_REQ_EVT:
-            if (gen_log_fd != -1)
-                fdprintf(gen_log_fd, "gap %d %d\n", event, param->cfm_req.num_val);
+            logf("gap %d %d", event, param->cfm_req.num_val);
             esp_bt_gap_ssp_confirm_reply(param->cfm_req.bda, true);
             break;
         case ESP_BT_GAP_PIN_REQ_EVT: {
-            if (gen_log_fd != -1)
-                fdprintf(gen_log_fd, "gap %d %d\n", event, param->pin_req.min_16_digit);
+            logf("gap %d %d", event, param->pin_req.min_16_digit);
             if (param->pin_req.min_16_digit) {
                 esp_bt_pin_code_t pin_code = {0};
                 esp_bt_gap_pin_reply(param->pin_req.bda, true, 16, pin_code);
@@ -343,8 +326,7 @@ static void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *pa
             break;
         }
         case ESP_BT_GAP_READ_REMOTE_NAME_EVT: {
-            if (gen_log_fd != -1)
-                fdprintf(gen_log_fd, "gap %d %d\n", event, param->read_rmt_name.stat);
+            logf("gap %d %d", event, param->read_rmt_name.stat);
             if (param->read_rmt_name.stat == ESP_BT_STATUS_SUCCESS) {
                 param->read_rmt_name.rmt_name[BT_MAX_NAME_LEN - 1] = 0;
                 esp_bt_gap_set_bond_device_property(param->read_rmt_name.bda, "RbDeviceName", param->read_rmt_name.rmt_name, strlen(param->read_rmt_name.rmt_name));
@@ -352,8 +334,7 @@ static void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *pa
             break;
         }
         default:
-            if (gen_log_fd != -1)
-                fdprintf(gen_log_fd, "gap %d\n", event);
+            logf("gap %d", event);
             return;
     }
 }
@@ -421,11 +402,6 @@ bool bt_heap_info(void)
 {
     struct simplelist_info info;
 
-    int old_fd = gen_log_fd;
-    gen_log_fd = -1;
-    if (old_fd != -1)
-        close(old_fd);
-
     simplelist_info_init(&info, "Bluetooth debug info:", 5, NULL);
     info.scroll_all = false;
     info.action_callback = bt_heap_info_action_callback;
@@ -471,8 +447,7 @@ static int sink_suspended = 1;
 
 bool bt_sink_suspend(void) {
     if (++sink_suspended == 1) {
-        if (gen_log_fd != -1)
-            fdprintf(gen_log_fd, "suspending playback: sink locked\n");
+        logf("suspending playback: sink locked");
         if (semaphore_wait(&sink_control_sem, TIMEOUT_NOBLOCK) == OBJ_WAIT_SUCCEEDED) {
             esp_a2d_media_ctrl(ESP_A2D_MEDIA_CTRL_SUSPEND);
         } else {
@@ -484,8 +459,7 @@ bool bt_sink_suspend(void) {
 }
 bool bt_sink_resume(void) {
     if (--sink_suspended == 0) {
-        if (gen_log_fd != -1)
-            fdprintf(gen_log_fd, "starting playback: sink unlocked\n");
+        logf("starting playback: sink unlocked");
         if (semaphore_wait(&sink_control_sem, TIMEOUT_NOBLOCK) == OBJ_WAIT_SUCCEEDED) {
             esp_a2d_media_ctrl(ESP_A2D_MEDIA_CTRL_START);
         } else {
@@ -499,8 +473,7 @@ bool bt_sink_resume(void) {
 static void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param) {
     switch (event) {
         case ESP_A2D_CONNECTION_STATE_EVT:
-            if (gen_log_fd != -1)
-                fdprintf(gen_log_fd, "a2d %d %d\n", event, param->conn_stat.state);
+            logf("a2d %d %d", event, param->conn_stat.state);
             if (param->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTED) {
                 semaphore_init(&sink_control_sem, 1, 0);
                 queue_init(&sink_control_queue, false);
@@ -518,8 +491,7 @@ static void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param) {
             }
             return;
         case ESP_A2D_MEDIA_CTRL_ACK_EVT:
-            if (gen_log_fd != -1)
-                fdprintf(gen_log_fd, "a2d %d %d %d\n", event, param->media_ctrl_stat.cmd, param->media_ctrl_stat.status);
+            logf("a2d %d %d %d", event, param->media_ctrl_stat.cmd, param->media_ctrl_stat.status);
             if (param->media_ctrl_stat.cmd == ESP_A2D_MEDIA_CTRL_CHECK_SRC_RDY) {
                 pcm_switch_sink(PCM_SINK_BLUETOOTH);
             } else if (sampr_switch_ongoing && param->media_ctrl_stat.cmd == ESP_A2D_MEDIA_CTRL_SUSPEND) {
@@ -541,8 +513,7 @@ static void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param) {
             }
             return;
         case ESP_A2D_REPORT_SNK_CODEC_CAPS_EVT: {
-            if (gen_log_fd != -1)
-                fdprintf(gen_log_fd, "a2d %d %d\n", event, param->a2d_report_snk_codec_caps_stat.mcc_len);
+            logf("a2d %d %d", event, param->a2d_report_snk_codec_caps_stat.mcc_len);
             bool done = false;
             for (int codec_idx = 0; codec_idx < NUM_CODECS; codec_idx++) {
                 current_codec = codec_list[codec_idx];
@@ -574,23 +545,19 @@ static void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param) {
             break;
         }
         case ESP_A2D_SRC_SET_PREF_MCC_EVT:
-            if (gen_log_fd != -1)
-                fdprintf(gen_log_fd, "a2d %d %d\n", event, param->a2d_set_pref_mcc_stat.set_status);
+            logf("a2d %d %d", event, param->a2d_set_pref_mcc_stat.set_status);
             if (sampr_switch_ongoing) {
                 sampr_switch_ongoing = false;
-                if (gen_log_fd != -1)
-                    fdprintf(gen_log_fd, "starting playback: sampr switch done\n");
+                logf("starting playback: sampr switch done");
                 bt_sink_resume();
             } else {
                 esp_a2d_media_ctrl(ESP_A2D_MEDIA_CTRL_CHECK_SRC_RDY);
             }
             return;
         case ESP_A2D_AUDIO_STATE_EVT:
-            if (gen_log_fd != -1)
-                fdprintf(gen_log_fd, "a2d %d %d\n", event, param->audio_stat.state);
+            logf("a2d %d %d", event, param->audio_stat.state);
         default:
-            if (gen_log_fd != -1)
-                fdprintf(gen_log_fd, "a2d %d\n", event);
+            logf("a2d %d", event);
         return;
     }
 }
@@ -598,16 +565,13 @@ static void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param) {
 static void bt_app_avrc_tg_cb(esp_avrc_tg_cb_event_t event, esp_avrc_tg_cb_param_t *param) {
     switch (event) {
         case ESP_AVRC_TG_CONNECTION_STATE_EVT:
-            if (gen_log_fd != -1)
-                fdprintf(gen_log_fd, "avrc-tg %d %d\n", event, param->conn_stat.connected);
+            logf("avrc-tg %d %d", event, param->conn_stat.connected);
             break;
         case ESP_AVRC_TG_REMOTE_FEATURES_EVT:
-            if (gen_log_fd != -1)
-                fdprintf(gen_log_fd, "avrc-tg %d %d %d\n", event, param->rmt_feats.ct_feat_flag, param->rmt_feats.feat_mask);
+            logf("avrc-tg %d %d %d", event, param->rmt_feats.ct_feat_flag, param->rmt_feats.feat_mask);
             break;
         case ESP_AVRC_TG_PASSTHROUGH_CMD_EVT:
-            if (gen_log_fd != -1)
-                fdprintf(gen_log_fd, "avrc-tg %d %d %d\n", event, param->psth_cmd.key_code, param->psth_cmd.key_state);
+            logf("avrc-tg %d %d %d", event, param->psth_cmd.key_code, param->psth_cmd.key_state);
             if (param->psth_cmd.key_state == 1) {
                 switch (param->psth_cmd.key_code) {
                     case ESP_AVRC_PT_CMD_PLAY:
@@ -633,12 +597,10 @@ static void bt_app_avrc_tg_cb(esp_avrc_tg_cb_event_t event, esp_avrc_tg_cb_param
             }
             break;
         case ESP_AVRC_TG_REGISTER_NOTIFICATION_EVT:
-            if (gen_log_fd != -1)
-                fdprintf(gen_log_fd, "avrc-tg %d %d\n", event, param->reg_ntf.event_id);
+            logf("avrc-tg %d %d", event, param->reg_ntf.event_id);
             break;
         default:
-            if (gen_log_fd != -1)
-                fdprintf(gen_log_fd, "avrc-tg %d\n", event);
+            logf("avrc-tg %d", event);
             return;
     }
 }
@@ -665,8 +627,7 @@ void bt_sink_unlock(void) {
 void bt_sink_set_freq(uint16_t freq) {
     sampr_switch_ongoing = true;
 
-    if (gen_log_fd != -1)
-        fdprintf(gen_log_fd, "suspending playback: sampr switch start, to %d\n", freq);
+    logf("suspending playback: sampr switch start, to %d", freq);
 
     bt_sink_suspend();
     current_codec->set_freq(bt_pcm_sink.caps.samprs[freq], &new_pref_mcc);
@@ -679,8 +640,7 @@ void bt_sink_set_freq(uint16_t freq) {
 void bt_sink_play(const void* addr, size_t size) {
     pcm_data_start = addr;
     pcm_data_size = size;
-    if (gen_log_fd != -1)
-        fdprintf(gen_log_fd, "starting playback: starting to play\n");
+    logf("starting playback: starting to play");
     bt_sink_resume();
     pcm_play_dma_status_callback(PCM_DMAST_STARTED);
 }
@@ -688,8 +648,7 @@ void bt_sink_play(const void* addr, size_t size) {
 void bt_sink_stop(void) {
     pcm_data_start = NULL;
     pcm_data_size = 0;
-    if (gen_log_fd != -1)
-        fdprintf(gen_log_fd, "suspending playback: stopped playing\n");
+    logf("suspending playback: stopped playing");
     bt_sink_suspend();
 }
 
