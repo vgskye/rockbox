@@ -177,6 +177,17 @@ static void a2dp_sbc_encoder_update(int16_t freq, esp_a2d_mcc_t *pref_mcc, bool*
   min_bitpool = a2dp_sbc_encoder_cb.peer_params.cie.sbc_info.min_bitpool;
   max_bitpool = a2dp_sbc_encoder_cb.peer_params.cie.sbc_info.max_bitpool;
 
+  int spec_bitpool = freq == SBC_sf44100 ? 53 : 51;
+
+  if (max_bitpool < spec_bitpool) {
+    // HACK: Samsung Galaxy Buds2 Pro seems to report a ridiculously low max bitpool of 37.
+    // Assuming the sink is otherwise compliant with A2DP v1.4.1, which specifies a minimum max bitpool:
+    // > The decoder of the SNK shall support 2 as the Minimum Bitpool Value and High Quality Bitpool value in
+    // > Table 4.7 as the Maximum Bitpool Value at a minimum.
+    // Clamp the minimum to the one specified in Table 4.7.
+    max_bitpool = spec_bitpool;
+  }
+
   pref_mcc->losc = A2D_SBC_INFO_LEN;
   pref_mcc->media_type = A2D_MEDIA_TYPE_AUDIO;
   pref_mcc->codec_type = ESP_A2D_MCT_SBC;
