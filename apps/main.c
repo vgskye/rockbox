@@ -479,7 +479,7 @@ static void init(void)
 #include "errno.h"
 #include "tlsf.h"
 
-void *btbuf;
+extern unsigned char btbuf[];
 
 static void init(void) INIT_ATTR;
 static void init(void)
@@ -492,8 +492,6 @@ static void init(void)
     kernel_init();
 
 #ifdef HAVE_BLUETOOTH
-    int btbuf_handle = core_alloc_ex(BT_HEAP_SIZE, &buflib_ops_locked);
-    btbuf = core_get_data(btbuf_handle);
     memset(btbuf, 0, 4); // make sure tlsf doesn't see ghosts
     init_memory_pool(BT_HEAP_SIZE, btbuf);
 #endif

@@ -39,7 +39,7 @@ char *osi_strdup(const char *str)
 #if (CONFIG_PLATFORM & PLATFORM_HOSTED)
 static unsigned char btbuf[BT_HEAP_SIZE];
 #else
-extern void *btbuf;
+extern unsigned char btbuf[];
 #endif
 
 void *osi_malloc_func(size_t size) {
