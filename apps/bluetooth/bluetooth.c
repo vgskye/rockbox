@@ -339,7 +339,7 @@ static void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *pa
     }
 }
 
-extern void* btbuf;
+extern unsigned char btbuf[];
 
 int bt_heap_info_action_callback(int action, struct gui_synclist *lists)
 {
