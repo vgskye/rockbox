@@ -426,13 +426,19 @@ static void bt_codec_task(void)
 {
     int64_t next_ms = (((int64_t)current_tick) * 1000) / HZ;
     while (esp_bluedroid_get_status() == ESP_BLUEDROID_STATUS_ENABLED && bt_current_state == ESP_A2D_AUDIO_STATE_STARTED) {
+        uint64_t ticked = 0;
         do {
+            if (ticked > (1000 / HZ)) {
+                ticked %= (1000 / HZ);
+                yield();
+            }
             if (current_codec == NULL) {
                 thread_exit();
                 return;
             }
             current_codec->tick();
             next_ms += current_codec->get_period();
+            ticked += current_codec->get_period();
         } while ((next_ms * HZ) / 1000 <= current_tick);
         sleep(((next_ms * HZ) / 1000) - current_tick);
     }
