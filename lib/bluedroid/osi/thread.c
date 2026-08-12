@@ -23,13 +23,23 @@
 #include "osi/semaphore.h"
 #include "osi/thread.h"
 #include "osi/mutex.h"
-#include "panic.h"
+#include "kernel.h"
+#include "semaphore.h"
 #include "thread.h"
-#include "queue.h"
+
+struct work_item {
+    osi_thread_func_t func;
+    void *context;
+};
 
 struct work_queue {
-    struct event_queue queue;
+    struct semaphore enqueue_sem;
+    struct mutex lock;
+    volatile size_t size;
+    volatile size_t head;
+    volatile size_t tail;
     size_t capacity;
+    struct work_item list[];
 };
 
 struct osi_thread {
@@ -48,11 +58,6 @@ struct osi_thread_start_arg {
   int error;
 };
 
-struct work_item {
-    osi_thread_func_t func;
-    void *context;
-};
-
 struct osi_event {
     struct work_item item;
     osi_mutex_t lock;
@@ -69,9 +74,13 @@ static struct work_queue *osi_work_queue_create(size_t capacity)
         return NULL;
     }
 
-    struct work_queue *wq = (struct work_queue *)osi_malloc(sizeof(struct work_queue));
+    struct work_queue *wq = (struct work_queue *)osi_malloc(sizeof(struct work_queue) + (capacity * sizeof(struct work_item)));
     if (wq != NULL) {
-        queue_init(&wq->queue, false);
+        semaphore_init(&wq->enqueue_sem, capacity, capacity);
+        mutex_init(&wq->lock);
+        wq->size = 0;
+        wq->head = 0;
+        wq->tail = 0;
         wq->capacity = capacity;
         return wq;
     }
@@ -82,27 +91,61 @@ static struct work_queue *osi_work_queue_create(size_t capacity)
 static void osi_work_queue_delete(struct work_queue *wq)
 {
     if (wq != NULL) {
-        queue_delete(&wq->queue);
-        wq->capacity = 0;
         osi_free(wq);
     }
     return;
 }
 
-static bool osi_thead_work_queue_get(struct work_queue *wq, struct queue_event *item)
+static bool osi_thead_work_queue_get(struct work_queue *wq, struct work_item *item)
 {
     assert (wq != NULL);
     assert (item != NULL);
 
-    queue_wait_w_tmo(&wq->queue, item, 0);
-    return item->id != SYS_TIMEOUT;
+    bool ret = false;
+    mutex_lock(&wq->lock);
+    if (wq->size > 0) {
+        *item = wq->list[wq->head];
+        wq->head = (wq->head + 1) % wq->capacity;
+        wq->size -= 1;
+        semaphore_release(&wq->enqueue_sem);
+        ret = true;
+    }
+    mutex_unlock(&wq->lock);
+    return ret;
+}
+
+static bool osi_thead_work_queue_put(struct work_queue *wq, const struct work_item *item, uint32_t timeout)
+{
+    assert (wq != NULL);
+    assert (item != NULL);
+
+    bool ret = true;
+    if (timeout == OSI_SEM_MAX_TIMEOUT) {
+        if (semaphore_wait(&wq->enqueue_sem, TIMEOUT_BLOCK) != OBJ_WAIT_SUCCEEDED) {
+            ret = false;
+        }
+    } else {
+        if (semaphore_wait(&wq->enqueue_sem, (timeout * HZ) / 1000) != OBJ_WAIT_SUCCEEDED) {
+            ret = false;
+        }
+    }
+
+    if (ret) {
+        mutex_lock(&wq->lock);
+        wq->list[wq->tail] = *item;
+        wq->tail = (wq->tail + 1) % wq->capacity;
+        wq->size += 1;
+        mutex_unlock(&wq->lock);
+    }
+
+    return ret;
 }
 
 static size_t osi_thead_work_queue_len(struct work_queue *wq)
 {
     assert (wq != NULL);
     assert (wq->capacity != 0);
-    return queue_count(&wq->queue);
+    return wq->size;
 }
 
 struct osi_thread_start_arg *hack_thread_start_arg;
@@ -125,12 +168,10 @@ static void osi_thread_run(void)
             break;
         }
 
-        struct queue_event item;
+        struct work_item item;
         while (!thread->stop && idx < thread->work_queue_num) {
-            if (osi_thead_work_queue_get(thread->work_queues[idx], &item) == true && item.id == 1) {
-                struct work_item *work = (struct work_item *) item.data;
-                work->func(work->context);
-                osi_free(work);
+            if (osi_thead_work_queue_get(thread->work_queues[idx], &item) == true) {
+                item.func(item.context);
                 idx = 0;
                 continue;
             } else {
@@ -301,16 +342,14 @@ bool osi_thread_post(osi_thread_t *thread, osi_thread_func_t func, void *context
         return false;
     }
 
-    struct work_item *work = osi_malloc(sizeof(struct work_item));
+    struct work_item item;
 
-    if (work == NULL) {
+    item.func = func;
+    item.context = context;
+
+    if (osi_thead_work_queue_put(thread->work_queues[queue_idx], &item, timeout) == false) {
         return false;
     }
-
-    work->func = func;
-    work->context = context;
-
-    queue_post(&thread->work_queues[queue_idx]->queue, 1, (intptr_t) work);
 
     osi_sem_give(&thread->work_sem);
 
