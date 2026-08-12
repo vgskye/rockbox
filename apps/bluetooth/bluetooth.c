@@ -25,6 +25,7 @@
 #include "thread.h"
 #include "tick.h"
 #include "tlsf.h"
+#include "misc.h"
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -83,7 +84,14 @@ void bluetooth_enable_discover(void)
         if ((ret = esp_bt_gap_register_callback(bt_app_gap_cb)) != ESP_OK) {
             panicf("%s set gap cb failed: %d", __func__, ret);
         }
-        if ((ret = esp_bt_gap_set_device_name("Rockbox")) != ESP_OK) {
+        char device_name[32] = "Rockbox";
+        int fd = open_utf8(ROCKBOX_DIR "/playername.txt", O_RDONLY);
+        if (fd >= 0) {
+            read_line(fd, device_name, sizeof(device_name));
+            close(fd);
+            device_name[sizeof(device_name)-1] = 0;
+        }
+        if ((ret = esp_bt_gap_set_device_name(device_name)) != ESP_OK) {
             panicf("%s set device name failed: %d", __func__, ret);
         }
         if ((ret = esp_avrc_tg_init()) != ESP_OK) {
