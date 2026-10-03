@@ -22,6 +22,7 @@
  /* Indicate it's the sound.c file which affects compilation of audiohw.h */
 #define AUDIOHW_IS_SOUND_C
 #include "config.h"
+#include "pcm_sink.h"
 #include "system.h"
 #include "sound.h"
 
@@ -65,31 +66,55 @@ static const struct sound_settings_info * get_settings_info(int setting)
 
 const char * sound_unit(int setting)
 {
+#ifdef WANT_SINK_VOLUME_OVERRIDE
+    if (setting == SOUND_VOLUME && pcm_current_sink_volume() != NULL)
+        return pcm_current_sink_volume()->volume_unit;
+#endif
     return get_settings_info(setting)->unit;
 }
 
 int sound_numdecimals(int setting)
 {
+#ifdef WANT_SINK_VOLUME_OVERRIDE
+    if (setting == SOUND_VOLUME && pcm_current_sink_volume() != NULL)
+        return pcm_current_sink_volume()->volume_numdecimals;
+#endif
     return get_settings_info(setting)->numdecimals;
 }
 
 int sound_steps(int setting)
 {
+#ifdef WANT_SINK_VOLUME_OVERRIDE
+    if (setting == SOUND_VOLUME && pcm_current_sink_volume() != NULL)
+        return pcm_current_sink_volume()->volume_step;
+#endif
     return get_settings_info(setting)->steps;
 }
 
 int sound_min(int setting)
 {
+#ifdef WANT_SINK_VOLUME_OVERRIDE
+    if (setting == SOUND_VOLUME && pcm_current_sink_volume() != NULL)
+        return pcm_current_sink_volume()->volume_min;
+#endif
     return get_settings_info(setting)->minval;
 }
 
 int sound_max(int setting)
 {
+#ifdef WANT_SINK_VOLUME_OVERRIDE
+    if (setting == SOUND_VOLUME && pcm_current_sink_volume() != NULL)
+        return pcm_current_sink_volume()->volume_max;
+#endif
     return get_settings_info(setting)->maxval;
 }
 
 int sound_default(int setting)
 {
+#ifdef WANT_SINK_VOLUME_OVERRIDE
+    if (setting == SOUND_VOLUME && pcm_current_sink_volume() != NULL)
+        return pcm_current_sink_volume()->volume_default;
+#endif
     return get_settings_info(setting)->defaultval;
 }
 
@@ -108,6 +133,10 @@ void sound_set(int setting, int value)
 
 int sound_current(int setting)
 {
+#ifdef WANT_SINK_VOLUME_OVERRIDE
+    if (setting == SOUND_VOLUME && pcm_current_sink_volume() != NULL)
+        return pcm_current_sink_volume()->get_volume();
+#endif
     switch(setting)
     {
 #ifndef BOOTLOADER
@@ -309,6 +338,11 @@ void sound_set_volume(int value)
     if (!audio_is_initialized)
         return;
 
+#ifdef WANT_SINK_VOLUME_OVERRIDE
+    if (pcm_current_sink_volume() != NULL)
+        return pcm_current_sink_volume()->set_volume(value);
+#endif
+
 #ifndef BOOTLOADER
     /* Apply limits */
     const int min_vol = sound_min(SOUND_VOLUME);
@@ -331,6 +365,11 @@ void sound_set_balance(int value)
 {
     if (!audio_is_initialized)
         return;
+    
+#ifdef WANT_SINK_VOLUME_OVERRIDE
+    if (pcm_current_sink_volume() != NULL)
+        return pcm_current_sink_volume()->set_balance(value);
+#endif
 
     sound_prescaler.balance = value;
     set_prescaled_volume();

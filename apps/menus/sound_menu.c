@@ -22,6 +22,7 @@
 #include <stddef.h>
 #include <limits.h>
 #include "config.h"
+#include "pcm.h"
 #include "sound.h"
 #include "lang.h"
 #include "action.h"
@@ -74,6 +75,13 @@ static int volume_limit_callback(int action,
     switch (action)
     {
         case ACTION_ENTER_MENUITEM:
+#ifdef WANT_SINK_VOLUME_OVERRIDE
+            if (pcm_current_sink_volume() != NULL)
+            {
+                splash(HZ/2, "TODO(skyevg): message here");
+                return ACTION_NONE;
+            }
+#endif
             setting.setting = &global_settings.volume_limit;
             option_screen(&setting, NULL, false, ID2P(LANG_VOLUME_LIMIT));
             /* Fallthrough */

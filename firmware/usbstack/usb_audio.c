@@ -24,6 +24,7 @@
  * Relevant specifications are USB 2.0 and USB Audio Class 1.0.
  */
 
+#include "audiohw.h"
 #include "string.h"
 #include "system.h"
 #include "usb_core.h"
@@ -903,7 +904,7 @@ static bool feature_unit_set_mute(int value, uint8_t cmd)
         tmp_saved_vol = sound_current(SOUND_VOLUME);
 
         // setvol does range checking for us!
-        global_status.volume = sound_min(SOUND_VOLUME);
+        sound_set(SOUND_VOLUME, sound_min(SOUND_VOLUME));
         setvol();
         return true;
     }
@@ -912,7 +913,7 @@ static bool feature_unit_set_mute(int value, uint8_t cmd)
         logf("usbaudio: not muted !");
 
         // setvol does range checking for us!
-        global_status.volume = tmp_saved_vol;
+        sound_set(SOUND_VOLUME, tmp_saved_vol);
         setvol();
         return true;
     }
@@ -984,7 +985,7 @@ static bool feature_unit_set_volume(int value, uint8_t cmd)
 
     // setvol does range checking for us!
     // we cannot guarantee the host will send us a volume within our range
-    global_status.volume = usb_audio_volume_to_db(value, sound_numdecimals(SOUND_VOLUME));
+    sound_set(SOUND_VOLUME, usb_audio_volume_to_db(value, sound_numdecimals(SOUND_VOLUME)));
     setvol();
     return true;
 }

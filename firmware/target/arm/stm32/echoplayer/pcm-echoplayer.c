@@ -320,6 +320,9 @@ struct pcm_sink builtin_pcm_sink = {
         .play     = sink_dma_start,
         .stop     = sink_dma_stop,
     },
+#ifdef WANT_SINK_VOLUME_OVERRIDE
+    .volume = NULL,
+#endif
 };
 
 void dma1_ch0_irq_handler(void)

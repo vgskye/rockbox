@@ -1534,6 +1534,11 @@ Lyre prototype 1 */
 
 #ifdef HAVE_BLUETOOTH
 #define HAVE_MULTIMEDIA_KEYS
+#define WANT_SINK_VOLUME_OVERRIDE
+#endif
+
+#if defined(WANT_SINK_VOLUME_OVERRIDE) && (CONFIG_TUNER || defined(HAVE_RECORDING) || defined(USB_ENABLE_IAP))
+#error "WANT_SINK_VOLUME_OVERRIDE currently does not support FM radio, IAP, or recording"
 #endif
 
 #endif /* __CONFIG_H__ */

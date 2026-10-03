@@ -202,6 +202,9 @@ struct pcm_sink iap_pcm_sink = {
         .play     = sink_play,
         .stop     = sink_stop,
     },
+#ifdef WANT_SINK_VOLUME_OVERRIDE
+    .volume = NULL,
+#endif
 };
 
 bool iap_audio_init(void) {

@@ -18,6 +18,7 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
+#include "audiohw.h"
 #include "config.h"
 #include <stdio.h>
 #include "string-extra.h"
@@ -227,10 +228,10 @@ void draw_progressbar(struct gui_wps *gwps, struct skin_viewport* skin_viewport,
         int maxvol = sound_max(SOUND_VOLUME);
 #if defined(HAVE_PERCEPTUAL_VOLUME) || defined(HAVE_TOUCHSCREEN)
         length = 1000;
-        end = to_normalized_volume(global_status.volume, minvol, maxvol, length);
+        end = to_normalized_volume(sound_current(SOUND_VOLUME), minvol, maxvol, length);
 #else
         length = maxvol - minvol;
-        end = global_status.volume - minvol;
+        end = sound_current(SOUND_VOLUME) - minvol;
 #endif
     }
     else if (pb->type == SKIN_TOKEN_BATTERY_PERCENTBAR)

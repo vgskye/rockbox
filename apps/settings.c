@@ -21,6 +21,7 @@
 /*#define LOGF_ENABLE*/
 /*Define DEBUG_AVAIL_SETTINGS to get a list of all available settings and flags */
 /*#define DEBUG_AVAIL_SETTINGS*/ /* Needs (LOGF_ENABLE) */
+#include "audiohw.h"
 #include "logf.h"
 
 #include <stdio.h>
@@ -842,7 +843,7 @@ void sound_settings_apply(void)
 #endif
     sound_set(SOUND_BALANCE, global_settings.balance);
 #ifndef PLATFORM_HAS_VOLUME_CHANGE
-    sound_set(SOUND_VOLUME, global_status.volume);
+    sound_set(SOUND_VOLUME, sound_current(SOUND_VOLUME));
 #endif
     sound_set(SOUND_CHANNELS, global_settings.channel_config);
     sound_set(SOUND_STEREO_WIDTH, global_settings.stereo_width);

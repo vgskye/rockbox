@@ -3088,7 +3088,7 @@ static void audio_start_playback(const struct audio_resume_info *resume_info,
         audio_set_output_source(AUDIO_SRC_PLAYBACK);
 #endif
 #ifndef PLATFORM_HAS_VOLUME_CHANGE
-        sound_set_volume(global_status.volume);
+        setvol();
 #endif
 
         /* Be sure channel is audible */

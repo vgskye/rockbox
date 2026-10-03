@@ -35,6 +35,21 @@ struct pcm_sink_caps {
     uint8_t              volume_type;
 };
 
+#ifdef WANT_SINK_VOLUME_OVERRIDE
+struct pcm_sink_volume {
+    const int volume_min;
+    const int volume_max;
+    const int volume_default;
+    const int volume_step;
+    const int volume_numdecimals;
+    const char *volume_unit;
+    int (*get_volume)(void);
+    void (*set_volume)(int volume);
+    void (*set_balance)(int balance);
+    void (*adjust_volume)(int steps);
+};
+#endif
+
 struct pcm_sink_ops {
     void (*init)(void);
     void (*postinit)(void);
@@ -51,6 +66,11 @@ struct pcm_sink {
 
     /* operations */
     const struct pcm_sink_ops ops;
+
+
+#ifdef WANT_SINK_VOLUME_OVERRIDE
+    const struct pcm_sink_volume *volume;
+#endif
 
     /* runtime states */
     unsigned long pending_freq;
