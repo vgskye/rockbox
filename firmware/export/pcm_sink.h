@@ -43,6 +43,7 @@ struct pcm_sink_volume {
     const int volume_step;
     const int volume_numdecimals;
     const char *volume_unit;
+    int (*get_volume)(void);
     void (*set_volume)(int volume);
     void (*set_balance)(int balance);
     void (*adjust_volume)(int steps);

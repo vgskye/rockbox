@@ -68,6 +68,8 @@ bool pcm_switch_sink(enum pcm_sink_ids sink);
 /* shortcut for plugins */
 const struct pcm_sink_caps* pcm_current_sink_caps(void);
 
+const struct pcm_sink_volume* pcm_current_sink_volume(void);
+
 /* Kept internally for global PCM and used by mixer's verion of peak
    calculation */
 struct pcm_peaks

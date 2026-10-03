@@ -18,6 +18,7 @@
  *
  ****************************************************************************/
 #include <stdlib.h>
+#include "pcm_sink.h"
 #include "system.h"
 #include "kernel.h"
 #include "panic.h"
@@ -320,6 +321,17 @@ const struct pcm_sink_caps* pcm_sink_caps(enum pcm_sink_ids sink)
 const struct pcm_sink_caps* pcm_current_sink_caps(void)
 {
     return pcm_sink_caps(pcm_current_sink());
+}
+
+const struct pcm_sink_volume* pcm_sink_volume(enum pcm_sink_ids sink)
+{
+    return sinks[sink]->volume;
+}
+
+
+const struct pcm_sink_volume* pcm_current_sink_volume(void)
+{
+    return pcm_sink_volume(pcm_current_sink());
 }
 
 bool pcm_switch_sink(enum pcm_sink_ids sink)

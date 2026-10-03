@@ -713,6 +713,7 @@ struct pcm_sink_volume bt_pcm_sink_volume = {
     .volume_step = 1,
     .volume_numdecimals = 0,
     .volume_unit = "",
+    .get_volume = NULL,
     .set_volume = NULL,
     .set_balance = NULL,
     .adjust_volume = NULL,
