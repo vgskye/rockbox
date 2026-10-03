@@ -1531,6 +1531,7 @@ Lyre prototype 1 */
 
 #ifdef HAVE_BLUETOOTH
 #define HAVE_MULTIMEDIA_KEYS
+#define WANT_FUCKASS_VOLUME
 #endif
 
 #endif /* __CONFIG_H__ */

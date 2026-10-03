@@ -706,6 +706,18 @@ size_t bt_read_pcm(uint8_t *buf, size_t len) {
     return written;
 }
 
+struct pcm_sink_volume bt_pcm_sink_volume = {
+    .volume_min = -127,
+    .volume_max = 0,
+    .volume_default = 0,
+    .volume_step = 1,
+    .volume_numdecimals = 0,
+    .volume_unit = "",
+    .set_volume = NULL,
+    .set_balance = NULL,
+    .adjust_volume = NULL,
+};
+
 struct pcm_sink bt_pcm_sink = {
     .caps = {
         .samprs       = NULL,
@@ -722,4 +734,5 @@ struct pcm_sink bt_pcm_sink = {
         .play     = bt_sink_play,
         .stop     = bt_sink_stop,
     },
+    .volume = &bt_pcm_sink_volume,
 };
