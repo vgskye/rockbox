@@ -977,7 +977,7 @@ static void fft_osd_format_message(enum fft_setting_flags id)
     case FFT_SETF_VOLUME:
         rb->snprintf(fft_osd_message, sizeof (fft_osd_message),
                      "Volume: %d%s",
-                     rb->sound_val2phys(SOUND_VOLUME, global_status.volume),
+                     rb->sound_val2phys(SOUND_VOLUME, rb->sound_current(SOUND_VOLUME)),
                      rb->sound_unit(SOUND_VOLUME));
         return;
 #endif

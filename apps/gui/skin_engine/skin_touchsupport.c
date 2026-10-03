@@ -216,8 +216,9 @@ int skin_get_touchaction(struct gui_wps *gwps, int* edge_offset)
         const int max_vol = sound_max(SOUND_VOLUME);
         const int step_vol = sound_steps(SOUND_VOLUME);
 
-        global_status.volume = from_normalized_volume(*edge_offset, min_vol, max_vol, 1000);
-        global_status.volume -= (global_status.volume % step_vol);
+        int new_volume = from_normalized_volume(*edge_offset, min_vol, max_vol, 1000);
+        new_volume -= (new_volume % step_vol);
+        sound_set(SOUND_VOLUME, new_volume);
         setvol();
 
         action = ACTION_TOUCHSCREEN;
@@ -317,12 +318,12 @@ int skin_get_touchaction(struct gui_wps *gwps, int* edge_offset)
     case ACTION_TOUCH_MUTE:
     {
         const int min_vol = sound_min(SOUND_VOLUME);
-        if (global_status.volume == min_vol)
-            global_status.volume = region->value;
+        if (sound_current(SOUND_VOLUME) == min_vol)
+            sound_set(SOUND_VOLUME, region->value);
         else
         {
-            region->value = global_status.volume;
-            global_status.volume = min_vol;
+            region->value = sound_current(SOUND_VOLUME);
+            sound_set(SOUND_VOLUME, min_vol);
         }
 
         setvol();

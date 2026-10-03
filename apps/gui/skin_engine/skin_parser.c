@@ -1900,7 +1900,7 @@ static int parse_touchregion(struct skin_element *element,
 
     if (region->action == ACTION_TOUCH_MUTE)
     {
-        region->value = global_status.volume;
+        region->value = sound_current(SOUND_VOLUME);
     }
 
 
