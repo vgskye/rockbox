@@ -360,6 +360,7 @@ typedef union {
      * @brief ESP_AVRC_CT_CHANGE_NOTIFY_EVT
      */
     struct avrc_ct_change_notify_param {
+        bool is_interim;
         uint8_t event_id;                        /*!< id of AVRC event notification */
         esp_avrc_rn_param_t event_parameter;     /*!< event notification parameter */
     } change_ntf;                                /*!< notifications */

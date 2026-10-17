@@ -685,6 +685,7 @@ static void handle_rc_notification_rsp (tAVRC_MSG_VENDOR *vendor_msg)
         return;
     }
 
+    param.change_ntf.is_interim = vendor_msg->hdr.ctype == AVRC_RSP_INTERIM;
     param.change_ntf.event_id = vendor_msg->p_vendor_data[AVRC_RSP_PARAM_VALUE_OFFSET];
 
     uint8_t *data = &vendor_msg->p_vendor_data[AVRC_RSP_PARAM_VALUE_OFFSET + 1];
@@ -984,7 +985,7 @@ static void handle_rc_metamsg_rsp (tBTA_AV_META_MSG *p_meta_msg)
         if (vendor_msg->hdr.ctype == AVRC_RSP_CHANGED) {
             handle_rc_notification_rsp(vendor_msg);
         } else if (vendor_msg->hdr.ctype == AVRC_RSP_INTERIM) {
-            // ignore this response
+            handle_rc_notification_rsp(vendor_msg);
         }
         break;
     case AVRC_PDU_GET_ELEMENT_ATTR:
