@@ -624,14 +624,14 @@ static void bt_app_avrc_ct_cb(esp_avrc_ct_cb_event_t event, esp_avrc_ct_cb_param
             logf("avrc-ct %d %d\n", event, param->change_ntf.event_id);
             if (param->change_ntf.event_id == ESP_AVRC_RN_VOLUME_CHANGE) {
                 logf("avrc-ct new vol %d\n", param->change_ntf.event_parameter.volume);
-                if (!bt_has_avrcp_abs_vol) {
-                    bt_has_avrcp_abs_vol = true;
-                    bt_update_volume();
-                }
                 if (bt_volume != param->change_ntf.event_parameter.volume) {
                     global_status.last_volume_change = current_tick;
                 }
                 bt_volume = param->change_ntf.event_parameter.volume;
+                if (!bt_has_avrcp_abs_vol) {
+                    bt_has_avrcp_abs_vol = true;
+                    bt_update_volume();
+                }
                 if (!param->change_ntf.is_interim) {
                     // Resubscribe to volume facts
                     esp_err_t err = esp_avrc_ct_send_register_notification_cmd(4, ESP_AVRC_RN_VOLUME_CHANGE, 0);
