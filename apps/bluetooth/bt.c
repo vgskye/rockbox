@@ -631,6 +631,15 @@ static void bt_app_avrc_ct_cb(esp_avrc_ct_cb_event_t event, esp_avrc_ct_cb_param
                 }
             }
             break;
+        case ESP_AVRC_CT_PASSTHROUGH_RSP_EVT:
+            logf("avrc-ct %d %d\n", event, param->psth_rsp.key_code);
+            if (param->psth_rsp.key_state == 0) { 
+                esp_err_t err = esp_avrc_ct_send_passthrough_cmd(0, param->psth_rsp.key_code, ESP_AVRC_PT_CMD_STATE_RELEASED);
+                if (err != ESP_OK) {
+                    panicf("error sending volume change: %d", err);
+                }
+            }
+            break;
         default:
             logf("avrc-ct %d\n", event);
             return;
@@ -807,10 +816,6 @@ static void bt_adjust_volume(int steps) {
     if (bt_has_avrcp_abs_vol) {
         uint8_t cmd = steps > 0 ? ESP_AVRC_PT_CMD_VOL_UP : ESP_AVRC_PT_CMD_VOL_DOWN;
         esp_err_t err = esp_avrc_ct_send_passthrough_cmd(0, cmd, ESP_AVRC_PT_CMD_STATE_PRESSED);
-        if (err != ESP_OK) {
-            panicf("error sending volume change: %d", err);
-        }
-        err = esp_avrc_ct_send_passthrough_cmd(1, cmd, ESP_AVRC_PT_CMD_STATE_RELEASED);
         if (err != ESP_OK) {
             panicf("error sending volume change: %d", err);
         }
