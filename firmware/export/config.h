@@ -1534,4 +1534,8 @@ Lyre prototype 1 */
 #define WANT_FUCKASS_VOLUME
 #endif
 
+#if defined(WANT_FUCKASS_VOLUME) && (CONFIG_TUNER || defined(HAVE_RECORDING) || defined(USB_ENABLE_IAP))
+#error "WANT_FUCKASS_VOLUME currently does not support FM radio, IAP, or recording"
+#endif
+
 #endif /* __CONFIG_H__ */

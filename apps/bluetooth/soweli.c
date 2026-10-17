@@ -36,7 +36,7 @@ static void soweli_sync_pcm_factors(void);
 /* Return the scale factor corresponding to the centibel level */
 static uint32_t soweli_centibels_to_factor(int volume)
 {
-    if (volume <= -900)
+    if (volume <= -635)
         return 0;
     
     if (volume > 0)

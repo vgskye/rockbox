@@ -18,6 +18,7 @@
  *
  ****************************************************************************/
 #include "audio.h"
+#include "audiohw.h"
 #include "buffering.h"
 #include "core_alloc.h"
 #include "metadata.h"
@@ -168,7 +169,7 @@ static uint8_t normalize_8(int val, int min, int max) {
 IAPBool iap_platform_get_volume(struct IAPContext* iap_ctx, struct IAPPlatformVolumeStatus* status) {
     (void)iap_ctx;
 
-    status->volume = _iap_convert_volume(global_status.volume);
+    status->volume = _iap_convert_volume(sound_current(SOUND_VOLUME));
     status->muted  = iap_false;
     return iap_true;
 }

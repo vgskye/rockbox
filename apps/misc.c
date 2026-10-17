@@ -29,6 +29,7 @@
 #include "lcd.h"
 #include "language.h" /* is_lang_rtl() */
 #include "iap-usb.h"
+#include "pcm_sink.h"
 
 #ifdef HAVE_DIRCACHE
 #include "dircache.h"
@@ -884,8 +885,8 @@ void check_bootfile(bool do_rolo)
 /* set volume and save settings */
 void setvol(void)
 {
-    sound_set_volume(global_status.volume);
-    iap_on_volume(global_status.volume);
+    sound_set_volume(sound_current(SOUND_VOLUME));
+    iap_on_volume(sound_current(SOUND_VOLUME));
     global_status.last_volume_change = current_tick;
     status_save(false);
 }
@@ -972,6 +973,10 @@ int get_normalized_volume(void)
 
 void adjust_volume(int steps)
 {
+#ifdef WANT_FUCKASS_VOLUME
+    if (pcm_current_sink_volume() != NULL)
+        return pcm_current_sink_volume()->adjust_volume(steps);
+#endif
 #ifdef HAVE_PERCEPTUAL_VOLUME
     adjust_volume_ex(steps, global_settings.volume_adjust_mode);
 #else

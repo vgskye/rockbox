@@ -904,7 +904,7 @@ static bool feature_unit_set_mute(int value, uint8_t cmd)
         tmp_saved_vol = sound_current(SOUND_VOLUME);
 
         // setvol does range checking for us!
-        global_status.volume = sound_min(SOUND_VOLUME);
+        sound_set(SOUND_VOLUME, sound_min(SOUND_VOLUME));
         setvol();
         return true;
     }
@@ -913,7 +913,7 @@ static bool feature_unit_set_mute(int value, uint8_t cmd)
         logf("usbaudio: not muted !");
 
         // setvol does range checking for us!
-        global_status.volume = tmp_saved_vol;
+        sound_set(SOUND_VOLUME, tmp_saved_vol);
         setvol();
         return true;
     }

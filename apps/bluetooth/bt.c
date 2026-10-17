@@ -1,3 +1,4 @@
+#include "bluetooth/soweli.h"
 #define LOGF_ENABLE
 #include "action.h"
 #include "asm/thread.h"
@@ -691,7 +692,7 @@ size_t bt_read_pcm(uint8_t *buf, size_t len) {
     if (pcm_data_start != NULL && audio_locked == 0) {
         while (len > 0 && (pcm_data_size > 0 || get_new_buf_maybe())) {
             size_t sent = MIN(pcm_data_size, len);
-            memcpy(buf, pcm_data_start, sent);
+            soweli_sw_volume_copy_buffer(buf, pcm_data_start, sent);
             pcm_data_start += sent;
             pcm_data_size -= sent;
             buf += sent;
