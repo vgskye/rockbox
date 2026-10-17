@@ -475,6 +475,8 @@ static int bt_volume = 127;
 static int bt_balance = 0;
 static bool bt_has_avrcp_abs_vol = false;
 
+static void bt_update_volume(void);
+
 bool bt_sink_suspend(void) {
     if (++sink_suspended == 1) {
         logf("suspending playback: sink locked");
@@ -518,6 +520,8 @@ static void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param) {
                     current_codec = NULL;
                     pcm_switch_sink(PCM_SINK_BUILTIN);
                     sound_set_balance(global_settings.balance);
+                    bt_has_avrcp_abs_vol = false;
+                    bt_volume = 127;
                 }
             }
             return;
@@ -620,7 +624,10 @@ static void bt_app_avrc_ct_cb(esp_avrc_ct_cb_event_t event, esp_avrc_ct_cb_param
             logf("avrc-ct %d %d\n", event, param->change_ntf.event_id);
             if (param->change_ntf.event_id == ESP_AVRC_RN_VOLUME_CHANGE) {
                 logf("avrc-ct new vol %d\n", param->change_ntf.event_parameter.volume);
-                bt_has_avrcp_abs_vol = true;
+                if (!bt_has_avrcp_abs_vol) {
+                    bt_has_avrcp_abs_vol = true;
+                    bt_update_volume();
+                }
                 if (bt_volume != param->change_ntf.event_parameter.volume) {
                     global_status.last_volume_change = current_tick;
                 }
