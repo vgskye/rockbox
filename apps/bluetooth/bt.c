@@ -517,6 +517,7 @@ static void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param) {
                     current_codec->deinit();
                     current_codec = NULL;
                     pcm_switch_sink(PCM_SINK_BUILTIN);
+                    sound_set_balance(global_settings.balance);
                 }
             }
             return;
@@ -524,6 +525,8 @@ static void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param) {
             logf("a2d %d %d %d", event, param->media_ctrl_stat.cmd, param->media_ctrl_stat.status);
             if (param->media_ctrl_stat.cmd == ESP_A2D_MEDIA_CTRL_CHECK_SRC_RDY) {
                 pcm_switch_sink(PCM_SINK_BLUETOOTH);
+                sound_set_balance(global_settings.balance);
+                
             } else if (sampr_switch_ongoing && param->media_ctrl_stat.cmd == ESP_A2D_MEDIA_CTRL_SUSPEND) {
                 esp_a2d_source_set_pref_mcc(conn_hdl, &new_pref_mcc);
             }

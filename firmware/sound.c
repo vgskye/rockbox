@@ -368,7 +368,7 @@ void sound_set_balance(int value)
     
 #ifdef WANT_FUCKASS_VOLUME
     if (pcm_current_sink_volume() != NULL)
-        pcm_current_sink_volume()->set_balance(value);
+        return pcm_current_sink_volume()->set_balance(value);
 #endif
 
     sound_prescaler.balance = value;
