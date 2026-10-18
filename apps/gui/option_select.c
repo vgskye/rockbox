@@ -19,6 +19,9 @@
  *
  ****************************************************************************/
 #include <stdlib.h>
+#include "audiohw.h"
+#include "pcm.h"
+#include "pcm_sink.h"
 #include "string-extra.h"
 #include "config.h"
 #include "system.h"
@@ -355,7 +358,7 @@ static int selection_to_val(const struct settings_list *setting, int selection)
         if(global_settings.list_order == LIST_ORDER_DESCENDING)
         {
             step = sound_steps(setting_id);
-            max = (setting_id == SOUND_VOLUME) ?
+            max = (setting_id == SOUND_VOLUME && pcm_current_sink_volume() == NULL) ?
                 global_settings.volume_limit : sound_max(setting_id);
             /* min = sound_min(setting_id); */
         }
@@ -445,7 +448,7 @@ static void val_to_selection(const struct settings_list *setting, int oldvalue,
             int setting_id = setting->sound_setting->setting;
             int steps = sound_steps(setting_id);
             int min = sound_min(setting_id);
-            int max = (setting_id == SOUND_VOLUME) ?
+            int max = (setting_id == SOUND_VOLUME && pcm_current_sink_volume() == NULL) ?
                 global_settings.volume_limit : sound_max(setting_id);
             *nb_items = (max-min)/steps + 1;
             if (global_settings.list_order == LIST_ORDER_DESCENDING)
@@ -495,6 +498,16 @@ bool option_screen(const struct settings_list *setting,
     int var_type = setting->flags&F_T_MASK;
     void (*function)(int) = NULL;
     const char *title = NULL;
+#ifdef WANT_FUCKASS_VOLUME
+    if (HASFLAG(setting, F_T_SOUND) && setting->sound_setting->setting == SOUND_VOLUME && pcm_current_sink_volume() != NULL)
+    {
+        use_temp_var = true;
+        cb_on_select_only = true;
+        variable = &temp_var;
+        temp_var = oldvalue = pcm_current_sink_volume()->get_volume();
+    }
+    else
+#endif
     if (var_type == F_T_INT || var_type == F_T_UINT)
     {
         variable = use_temp_var ? &temp_var: (int*)setting->setting;
